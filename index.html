@@ -11,9 +11,8 @@
     <svg id='vis'></svg>
 
     <script>
-
       /*
-       * For when we want to get cursor position upon click
+       * Commented out, for when we want to get cursor position upon click
       function printMousePos(event) {
         [x, y] = [event.clientX, event.clientY];
         console.log("x: ", x, ", y: ", y);
@@ -21,6 +20,26 @@
 
       document.addEventListener("click", printMousePos);
       */
+      
+      // Constants
+      const SPOTLIGHT_COLOR = "rgba(198, 45, 205, 0.6)";
+      const DEFAULT_SPOTLIGHT_RADIUS = 120;
+      const DEFAULT_SPOTLIGHT_A = {
+        name: "HONG KONG RESTAURANT",
+        grade: "Pass",
+        score: 94,
+        lat: 37.418561,
+        lng: -122.132842,
+        address: "3691 EL CAMINO REAL ,PALO ALTO, CA 94306"
+      };
+      const DEFAULT_SPOTLIGHT_B = {
+        name: "LA BAGUETTE",
+        grade: "Pass",
+        score: 70,
+        lat: 37.44509,
+        lng: -122.17126,
+        address: "170 STANFORD SHOPPING CENTER ,PALO ALTO, CA 94304"
+      };
 
       // Set up size
       var mapWidth = 1000; var mapHeight = 750;
@@ -64,6 +83,8 @@
         console.log(data);
         allData = data; // save data into var
         drawPoints(allData);
+        spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS);
+        spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS);
       });
 
       // Converts lng, lat pair to x, y on map
@@ -72,6 +93,17 @@
       function lngLatToXY(lng, lat) {
         [x, y] = projection([lng, lat]);
         return {x: x, y: y}
+      }
+
+      // Draws a circle of radius r at the given lng, lat projected onto map
+      function drawSpotlight(lng, lat, r) {
+        var xyPos = lngLatToXY(lng, lat);
+        var circle = svg.append('circle');
+        circle.attr('r', r)
+              .attr('cx', xyPos.x)
+              .attr('cy', xyPos.y)
+              .style('fill', SPOTLIGHT_COLOR);
+        return circle;
       }
 
       // Draw circular points for given inputData
@@ -93,7 +125,7 @@
                               svg.append('text')
                                  .attr('x', lngLatToXY(d.lng, d.lat).x + 10)
                                  .attr('y', lngLatToXY(d.lng, d.lat).y + 5)
-                                 .text(d.name)
+                                 .text(d.name + ' ' + d.score)
                               })
                           .on('mouseout', function(d) {
                             svg.selectAll('text').remove()
