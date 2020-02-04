@@ -11,6 +11,17 @@
     <svg id='vis'></svg>
 
     <script>
+
+      /*
+       * For when we want to get cursor position upon click
+      function printMousePos(event) {
+        [x, y] = [event.clientX, event.clientY];
+        console.log("x: ", x, ", y: ", y);
+      }
+
+      document.addEventListener("click", printMousePos);
+      */
+
       // Set up size
       var mapWidth = 1000; var mapHeight = 750;
 
@@ -21,7 +32,8 @@
                          .scale(scale)
                          .translate([mapWidth / 2, mapHeight / 2]);
 
-      // This is the mapping between <longitude, latitude> position to <x, y> pixel position on the map
+      // This is the mapping between <longitude, latitude> position 
+      // to <x, y> pixel position on the map
       // projection is a function and it has an inverse:
       // projection([lon, lat]) returns [x, y]
       // projection.invert([x, y]) returns [lon, lat]
@@ -29,26 +41,66 @@
       var svg = d3.select('body').append('svg')
                   .attr('width', mapWidth)
                   .attr('height', mapHeight);
-                  // Add SVG map at correct size, assuming map is saved in a subdirectory called `data`
+
+      // Add SVG map at correct size, assuming map is saved in a 
+      // subdirectory called `data`
       svg.append('image')
          .attr('width', mapWidth)
          .attr('height', mapHeight)
          .attr('xlink:href', 'media/map.svg');
 
+      var allData;
       // Read in data
       d3.csv('data/data.csv', function(d) {
         return {
-          name: d.Name, // + to turn into numbers
-          grade: d.Grade, // no + because want to remain str
+          name: d.Name,
+          grade: d.Grade,
           score: +d.Score,
-          latitude: +d.Latitude,
-          longitude: +d.Longitude,
+          lat: +d.Latitude,
+          lng: +d.Longitude,
           address: d.Adress
         };
       }).then(function(data) {
-        // do something with the data
         console.log(data);
+        allData = data; // save data into var
+        drawPoints(allData);
       });
+
+      // Converts lng, lat pair to x, y on map
+      // Could optimize by using this to add property to data upon read in
+      // instead of calling every time we draw point
+      function lngLatToXY(lng, lat) {
+        [x, y] = projection([lng, lat]);
+        return {x: x, y: y}
+      }
+
+      // Draw circular points for given inputData
+      function drawPoints(inputData) {
+        var points = svg.selectAll('myCircles')
+                        .data(inputData)
+                        .enter().append('circle')
+                          .attr('r', 4)
+                          .attr('cx', function(d) { 
+                            return lngLatToXY(d.lng, d.lat).x; 
+                           })
+                          .attr('cy', function(d) { 
+                            return lngLatToXY(d.lng, d.lat).y; 
+                           })
+                          .style('fill', 'blue')
+
+                          // Adding mouseover for restaurant name for debugging
+                          .on('mouseover', function(d) {
+                              svg.append('text')
+                                 .attr('x', lngLatToXY(d.lng, d.lat).x + 10)
+                                 .attr('y', lngLatToXY(d.lng, d.lat).y + 5)
+                                 .text(d.name)
+                              })
+                          .on('mouseout', function(d) {
+                            svg.selectAll('text').remove()
+                          });
+        // exit selection, remove anything not contained in that selection
+        points.exit().remove();
+      }
     </script>
 
   </body>
