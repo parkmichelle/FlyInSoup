@@ -103,6 +103,7 @@
       }
 
       // Displays the colorscale
+      // Src: https://github.com/d3/d3-scale-chromatic/blob/master/README.md#interpolateRainbow
       function addScale() {
 
       var colorScale = d3.scaleSequential(d3.interpolateRdYlGn).domain([0, mapWidth]);
@@ -166,13 +167,7 @@
                             return lngLatToXY(d.lng, d.lat).y; 
                            })
                           .style('fill', function(d) {
-                            if (color == "default") {
-                              // interesting color scales: https://github.com/d3/d3-scale-chromatic/blob/master/README.md#interpolateRainbow
-                              //if (d.grade == "Pass") 
-                              return d3.interpolateRdYlGn(d.score/100);
-
-                              //else return 'red';
-                            }
+                            if (color == "default")  eturn d3.interpolateRdYlGn(d.score/100);
                             else return color;
                           })
                           .attr('opacity', 1)
