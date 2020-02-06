@@ -22,8 +22,10 @@
       */
       
       // Constants
-      const SPOTLIGHT_COLOR = "rgba(198, 45, 205, 0.6)";
+      //const SPOTLIGHT_COLOR = "rgba(198, 45, 205, 0.6)";
+      const SPOTLIGHT_COLOR = "rgb(143, 166, 203, .3)";
       const DEFAULT_SPOTLIGHT_RADIUS = 120;
+      const RADIUS_BUF = 10;
       const DEFAULT_SPOTLIGHT_A = {
         name: "HONG KONG RESTAURANT",
         grade: "Pass",
@@ -80,12 +82,14 @@
           address: d.Adress
         };
       }).then(function(data) {
-        console.log(data);
         allData = data; // save data into var
-        //drawPoints(allData);
-        spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS);
-        spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS);
-        getSelection(spotlightA, allData);
+        drawPoints(allData, 'default');
+
+        spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
+        spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
+        
+        intersect = getSelection(spotlightA, spotlightB, allData); // select points in A and B
+        drawPoints(intersect, 'orange'); // draw these points
       });
 
       // Converts lng, lat pair to x, y on map
@@ -96,25 +100,15 @@
         return {x: x, y: y}
       }
 
-      // Draws a circle of radius r at the given lng, lat projected onto map
-      function drawSpotlight(lng, lat, r) {
-        var xyPos = lngLatToXY(lng, lat);
-        var circle = svg.append('circle');
-        circle.attr('r', r)
-              .attr('cx', xyPos.x)
-              .attr('cy', xyPos.y)
-              .style('fill', SPOTLIGHT_COLOR);
-        // filter data
-        return circle;
-      }
-
-      function getSelection(circle, data) {
+      // Returns points that fall in the intersection of the 2 provided circles
+      function getSelection(circle1, circle2, data) {
         var newData = data.filter(function(d) {
-          return inCircle(circle, lngLatToXY(d.lng, d.lat));
+          return inCircle(circle1, lngLatToXY(d.lng, d.lat)) && inCircle(circle2, lngLatToXY(d.lng, d.lat));
         });
-        drawPoints(newData);
+        return newData;
       }
 
+      // Calculates whether a point lies within a circle, using Euclidean distance
       function inCircle(circle, point) {
         var x1 = circle.attr("cx");
         var x2 = point.x;
@@ -122,13 +116,28 @@
         var y1 = circle.attr("cy");
         var y2 = point.y;
 
-        return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < circle.attr('r');
+        return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (circle.attr('r') - RADIUS_BUF);
       }
 
-      // Draw circular points for given inputData
-      function drawPoints(inputData) {
+      // Draws a circle of radius r at the given lng, lat projected onto map
+      function drawSpotlight(lng, lat, r, data) {
+        var xyPos = lngLatToXY(lng, lat);
+        var circle = svg.append('circle');
+
+        circle.attr('r', r)
+              .attr('cx', xyPos.x)
+              .attr('cy', xyPos.y)
+              .style('fill', SPOTLIGHT_COLOR)
+              .call(d3.drag().on('drag', callback));
+
+        //getSelection(circle, data);
+        return circle;
+      }
+
+      // Draws circles on each data point in the selected color- if color is "default", color encode pass/fail score
+      function drawPoints(data, color) {
         var points = svg.selectAll('myCircles')
-                        .data(inputData)
+                        .data(data)
                         .enter().append('circle')
                           .attr('r', 4)
                           .attr('cx', function(d) { 
@@ -137,9 +146,15 @@
                           .attr('cy', function(d) { 
                             return lngLatToXY(d.lng, d.lat).y; 
                            })
-                          .style('fill', 'blue')
-
-                          // Adding mouseover for restaurant name for debugging
+                          .style('fill', function(d) {
+                            if (color == "default") {
+                              // interesting color scales: https://github.com/d3/d3-scale-chromatic/blob/master/README.md#interpolateRainbow
+                              if (d.grade == "Pass") return 'green';
+                              else return 'red';
+                            }
+                            else return color;
+                          })
+                          .attr('opacity', .5)
                           .on('mouseover', function(d) {
                               svg.append('text')
                                  .attr('x', lngLatToXY(d.lng, d.lat).x + 10)
@@ -150,8 +165,18 @@
                             svg.selectAll('text').remove()
                           });
         // exit selection, remove anything not contained in that selection
-        points.exit().remove();
+        points.exit().remove(); // don't think this is working at the moment- points are drawing over each other
       }
+
+      // Callback for dragging- need to learn how to pass in data
+      // Need to pass in the data sets and other svg so we can re-calculate and plot intersection
+    function callback() {
+      d3.select(this)
+        .attr('cx', d3.event.x)
+        .attr('cy', d3.event.y);
+      
+      //getSelection(this, data);
+  }
     </script>
 
   </body>
