@@ -25,7 +25,7 @@
       //const SPOTLIGHT_COLOR = "rgba(198, 45, 205, 0.6)";
       const SPOTLIGHT_COLOR = "rgb(143, 166, 203, .3)";
       const DEFAULT_SPOTLIGHT_RADIUS = 120;
-      const RADIUS_BUF = 10;
+      const RADIUS_BUF = 0;
       const DEFAULT_SPOTLIGHT_A = {
         name: "HONG KONG RESTAURANT",
         grade: "Pass",
@@ -167,7 +167,7 @@
                             return lngLatToXY(d.lng, d.lat).y; 
                            })
                           .style('fill', function(d) {
-                            if (color == "default")  eturn d3.interpolateRdYlGn(d.score/100);
+                            if (color == "default")  return d3.interpolateRdYlGn(d.score/100);
                             else return color;
                           })
                           .attr('opacity', 1)
