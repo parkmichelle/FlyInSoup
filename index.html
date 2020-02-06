@@ -89,8 +89,10 @@
         spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
         
         intersect = getSelection(spotlightA, spotlightB, allData); // select points in A and B
-        drawPoints(intersect, 'orange'); // draw these points
-      });
+        drawPoints(intersect, 'purple'); // draw these points
+        addScale();
+ });
+
 
       // Converts lng, lat pair to x, y on map
       // Could optimize by using this to add property to data upon read in
@@ -98,6 +100,23 @@
       function lngLatToXY(lng, lat) {
         [x, y] = projection([lng, lat]);
         return {x: x, y: y}
+      }
+
+      // Displays the colorscale
+      function addScale() {
+
+      var colorScale = d3.scaleSequential(d3.interpolateRdYlGn).domain([0, mapWidth]);
+
+        var bars = svg.selectAll(".bars")
+          .data(d3.range(mapWidth), function(d) { return d; })
+          .enter().append("rect")
+          .attr("class", "bars")
+          .attr("x", function(d, i) { return i; })
+          .attr("y", 0)
+          .attr("height", 50)
+          .attr("width", 1)
+          .style("fill", function(d, i ) { return colorScale(d); })
+    
       }
 
       // Returns points that fall in the intersection of the 2 provided circles
@@ -149,12 +168,14 @@
                           .style('fill', function(d) {
                             if (color == "default") {
                               // interesting color scales: https://github.com/d3/d3-scale-chromatic/blob/master/README.md#interpolateRainbow
-                              if (d.grade == "Pass") return 'green';
-                              else return 'red';
+                              //if (d.grade == "Pass") 
+                              return d3.interpolateRdYlGn(d.score/100);
+
+                              //else return 'red';
                             }
                             else return color;
                           })
-                          .attr('opacity', .5)
+                          .attr('opacity', 1)
                           .on('mouseover', function(d) {
                               svg.append('text')
                                  .attr('x', lngLatToXY(d.lng, d.lat).x + 10)
