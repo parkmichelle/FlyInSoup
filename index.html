@@ -82,9 +82,10 @@
       }).then(function(data) {
         console.log(data);
         allData = data; // save data into var
-        drawPoints(allData);
+        //drawPoints(allData);
         spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS);
         spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS);
+        getSelection(spotlightA, allData);
       });
 
       // Converts lng, lat pair to x, y on map
@@ -105,6 +106,23 @@
               .style('fill', SPOTLIGHT_COLOR);
         // filter data
         return circle;
+      }
+
+      function getSelection(circle, data) {
+        var newData = data.filter(function(d) {
+          return inCircle(circle, lngLatToXY(d.lng, d.lat));
+        });
+        drawPoints(newData);
+      }
+
+      function inCircle(circle, point) {
+        var x1 = circle.attr("cx");
+        var x2 = point.x;
+
+        var y1 = circle.attr("cy");
+        var y2 = point.y;
+
+        return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < circle.attr('r');
       }
 
       // Draw circular points for given inputData
