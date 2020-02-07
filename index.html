@@ -95,11 +95,13 @@
       }).then(function(data) {
         allData = data; // save data into var
         drawPoints(allData, 'default');
+
           spotlight_A = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, NAMES[0]);
           spotlight_B = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, NAMES[1]);
           makeDraggable(spotlight_A, spotlight_B, allData, 'a');
           makeDraggable(spotlight_A, spotlight_B, allData, 'b');
           intersect = getSelection(spotlight_A, spotlight_B, allData); // select points in A and B
+          
           drawPoints(intersect, 'purple'); // draw these points
      });
 
@@ -157,6 +159,19 @@
         return newData;
       }
 
+      /*// Updates data to contain the intersection, doesn't return anything
+      function updateIntersection(data, spotlightA, spotlightB) {
+         const intersectionDataPoints = data.filter(function(d) {
+           return inCircle(spotlightA, lngLatToXY(d.lng, d.lat)) 
+             && inCircle(spotlightB, lngLatToXY(d.lng, d.lat));
+         });
+         intersection.clear();
+         for (i = 0; i < intersectionDataPoints.length; i++) {
+           // TODO: Can speed this up by using unique id instead of obj
+           intersection.add(intersectionDataPoints[i]);
+         }
+      }*/
+
       // Calculates whether a point lies within a circle, using Euclidean distance
       function inCircle(circle, point) {
         var x1 = circle.attr("cx");
@@ -190,9 +205,10 @@
 
       // Draws circles on each data point in the selected color- if color is "default", color encode pass/fail score
       function drawPoints(data, color) {
-        var points = svg.selectAll('myCircles')
+        var points = svg.selectAll('#dataPoint')
                         .data(data)
                         .enter().append('circle')
+                          .attr('id', 'dataPoint')
                           .attr('r', 4)
                           .attr('cx', function(d) { 
                             return lngLatToXY(d.lng, d.lat).x; 
@@ -215,7 +231,16 @@
                             svg.selectAll('text').remove()
                           });
         // exit selection, remove anything not contained in that selection
-        points.exit().remove(); 
+        svg.selectAll('#dataPoint').data(data).exit()
+              .attr('r', 4)
+              .attr('cx', function(d) { 
+                return lngLatToXY(d.lng, d.lat).x; 
+               })
+              .attr('cy', function(d) { 
+                return lngLatToXY(d.lng, d.lat).y; 
+               })
+              .style('fill', 'gray');
+              //remove(); 
         // .exit().color(gray)
         // don't think this is working at the moment- points are drawing over each other
       }
