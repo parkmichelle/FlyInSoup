@@ -18,6 +18,12 @@
     </label>
 
     <svg id='vis'></svg>
+    <div>Circle A: </div><div id="textA">120</div>
+    <input type="range" min="1" max="240" id="nRadiusA">
+
+    <div>Circle B: </div><div id="textB">120</div>
+    <input type="range" min="1" max="240" id="nRadiusB">
+    
 
     <script>
       /*
@@ -52,6 +58,7 @@
         lng: -122.17126,
         address: "170 STANFORD SHOPPING CENTER ,PALO ALTO, CA 94304"
       };
+      const NAMES = ['a', 'b'];
 
       function Point(x, y) {
         this.x = x;
@@ -93,6 +100,8 @@
          .attr('xlink:href', 'media/map.svg');
 
       var allData;
+      var spotlightA;
+      var spotlightB;
       // Read in data
       d3.csv('data/data.csv', function(d) {
         return {
@@ -109,19 +118,23 @@
         var circleA = new Circle(lngLatToXY(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat), DEFAULT_SPOTLIGHT_RADIUS);
         var circleB = new Circle(lngLatToXY(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat), DEFAULT_SPOTLIGHT_RADIUS);
 
-        updateIntersection(allData, circleA, circleB);
 
-        drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
-        drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
+        spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, NAMES[0]);
+        spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, NAMES[1]);
+        makeDraggable(spotlightA, spotlightB, allData, 'a');
+        makeDraggable(spotlightA, spotlightB, allData, 'b');
+
+        updateIntersection(allData, spotlightA, spotlightB);
+
         drawPoints(allData, 'default');
         
         addScale();
       });
 
-      function updateIntersection(data, circleA, circleB) {
+      function updateIntersection(data, spotlightA, spotlightB) {
          const intersectionDataPoints = data.filter(function(d) {
-           return inCircle(circleA, lngLatToXY(d.lng, d.lat)) 
-             && inCircle(circleB, lngLatToXY(d.lng, d.lat));
+           return inCircle(spotlightA, lngLatToXY(d.lng, d.lat)) 
+             && inCircle(spotlightB, lngLatToXY(d.lng, d.lat));
          });
          intersection.clear();
          for (i = 0; i < intersectionDataPoints.length; i++) {
@@ -132,14 +145,34 @@
 
       // Calculates whether a point lies within a circle, using Euclidean distance
       function inCircle(circle, point) {
-        var x1 = circle.centerXY.x;
+        var x1 = circle.attr("cx");
         var x2 = point.x;
  
-        var y1 = circle.centerXY.y;
+        var y1 = circle.attr("cy");
         var y2 = point.y;
 
-        return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (circle.r - RADIUS_BUF);
+        return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (circle.attr("r") - RADIUS_BUF);
       }
+
+      addScale();
+
+      d3.select("#nRadiusA").on("input", function() {
+        update(+this.value, NAMES[0]);
+        });
+      d3.select("#nRadiusB").on("input", function() {
+        update(+this.value, NAMES[1]);
+        });
+
+      // Updates the circle size and text based on radius
+      function update(nRadius, id) {
+        // adjust the text on the range slider
+        d3.select("#nRadius-value").text(nRadius);
+        d3.select("#text" + id).text(nRadius);
+
+        // update the circle radius
+        svg.selectAll("circle." + id) 
+        .attr("r", nRadius);
+    }
 
       // Converts lng, lat pair to x, y on map
       // Could optimize by using this to add property to data upon read in
@@ -168,18 +201,21 @@
       }
 
       // Draws a circle of radius r at the given lng, lat projected onto map
-      function drawSpotlight(lng, lat, r, data) {
+      function drawSpotlight(lng, lat, r, id) {
         var xyPos = lngLatToXY(lng, lat);
         var circle = svg.append('circle');
 
-        circle.attr('r', r)
+        return circle.attr('r', r)
               .attr('cx', xyPos.x)
               .attr('cy', xyPos.y)
-              .attr('z-index', 0)
-              .style('fill', SPOTLIGHT_COLOR)
-              .call(d3.drag().on('drag', callback));
-
+              .attr('class', id)
+              .style('fill', SPOTLIGHT_COLOR);
         //getSelection(circle, data);
+      }
+
+      function makeDraggable(cA, cB, data, id) {
+        if (id == 'a') cA.call(d3.drag().on('drag', callback));
+        else cB.call(d3.drag().on('drag', callback));
       }
 
       // Draws circles on each data point in the selected color- if color is "default", color encode pass/fail score
@@ -228,8 +264,12 @@
           .attr('cx', d3.event.x)
           .attr('cy', d3.event.y);
         
-        //getSelection(this, data);
+        updateIntersection(allData, spotlightA, spotlightB);
+        drawPoints(allData);
+        // run .data again with filtered points
+        // get rid of sqrt
       }
+
     </script>
 
   </body>
