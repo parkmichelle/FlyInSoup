@@ -8,6 +8,9 @@
   </head>
 
   <body>
+    <input type="text" id="searchbox" 
+      placeholder="Search for restaurants..">
+
     <svg id='vis'></svg>
 
     <script>
@@ -82,7 +85,7 @@
       }).then(function(data) {
         console.log(data);
         allData = data; // save data into var
-        drawPoints(allData);
+        drawPoints(allData, 'green');
         spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS);
         spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS);
       });
@@ -107,7 +110,7 @@
       }
 
       // Draw circular points for given inputData
-      function drawPoints(inputData) {
+      function drawPoints(inputData, color) {
         var points = svg.selectAll('myCircles')
                         .data(inputData)
                         .enter().append('circle')
@@ -118,7 +121,7 @@
                           .attr('cy', function(d) { 
                             return lngLatToXY(d.lng, d.lat).y; 
                            })
-                          .style('fill', 'blue')
+                          .style('fill', color)
 
                           // Adding mouseover for restaurant name for debugging
                           .on('mouseover', function(d) {
@@ -129,10 +132,17 @@
                               })
                           .on('mouseout', function(d) {
                             svg.selectAll('text').remove()
-                          });
-        // exit selection, remove anything not contained in that selection
-        points.exit().remove();
+                          })
+                        .exit().remove();
       }
+
+      d3.select('#searchbox').on('keyup', function() {
+        var inputText = document.getElementById('searchbox').value.toUpperCase();
+        const matches = allData.filter(d => d.name.toUpperCase().includes(inputText));
+        console.log("Matches: ", matches);
+        svg.selectAll('myCircles').remove();
+        drawPoints(matches, 'pink'); // redraw circles
+      });
     </script>
 
   </body>
