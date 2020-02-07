@@ -26,6 +26,7 @@
       
       // Constants
       //const SPOTLIGHT_COLOR = "rgba(198, 45, 205, 0.6)";
+      const INTERSECTION_COLOR = 'purple';
       const SPOTLIGHT_COLOR = "rgb(143, 166, 203, .3)";
       const DEFAULT_SPOTLIGHT_RADIUS = 120;
       const RADIUS_BUF = 0;
@@ -45,6 +46,18 @@
         lng: -122.17126,
         address: "170 STANFORD SHOPPING CENTER ,PALO ALTO, CA 94304"
       };
+
+      function Point(x, y) {
+        this.x = x;
+        this.y = y;
+      }
+
+      function Circle(centerXY, r) {
+        this.centerXY = centerXY;
+        this.r = r;
+      }
+
+      var intersection = new Set();
 
       // Set up size
       var mapWidth = 1000; var mapHeight = 750;
@@ -86,22 +99,48 @@
         };
       }).then(function(data) {
         allData = data; // save data into var
+
+        var circleA = new Circle(lngLatToXY(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat), DEFAULT_SPOTLIGHT_RADIUS);
+        var circleB = new Circle(lngLatToXY(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat), DEFAULT_SPOTLIGHT_RADIUS);
+
+        updateIntersection(allData, circleA, circleB);
         drawPoints(allData, 'default');
 
-        spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
-        spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
+        drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
+        drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
         
-        intersect = getSelection(spotlightA, spotlightB, allData); // select points in A and B
-        drawPoints(intersect, 'purple'); // draw these points
         addScale();
-     });
+      });
+
+      function updateIntersection(data, circleA, circleB) {
+         const intersectionDataPoints = data.filter(function(d) {
+           return inCircle(circleA, lngLatToXY(d.lng, d.lat)) 
+             && inCircle(circleB, lngLatToXY(d.lng, d.lat));
+         });
+         intersection.clear();
+         for (i = 0; i < intersectionDataPoints.length; i++) {
+           // TODO: Can speed this up by using unique id instead of obj
+           intersection.add(intersectionDataPoints[i]);
+         }
+      }
+
+      // Calculates whether a point lies within a circle, using Euclidean distance
+      function inCircle(circle, point) {
+        var x1 = circle.centerXY.x;
+        var x2 = point.x;
+ 
+        var y1 = circle.centerXY.y;
+        var y2 = point.y;
+
+        return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (circle.r - RADIUS_BUF);
+      }
 
       // Converts lng, lat pair to x, y on map
       // Could optimize by using this to add property to data upon read in
       // instead of calling every time we draw point
       function lngLatToXY(lng, lat) {
         [x, y] = projection([lng, lat]);
-        return {x: x, y: y}
+        return new Point(x, y);
       }
 
       // Displays the colorscale
@@ -122,25 +161,6 @@
     
       }
 
-      // Returns points that fall in the intersection of the 2 provided circles
-      function getSelection(circle1, circle2, data) {
-        var newData = data.filter(function(d) {
-          return inCircle(circle1, lngLatToXY(d.lng, d.lat)) && inCircle(circle2, lngLatToXY(d.lng, d.lat));
-        });
-        return newData;
-      }
-
-      // Calculates whether a point lies within a circle, using Euclidean distance
-      function inCircle(circle, point) {
-        var x1 = circle.attr("cx");
-        var x2 = point.x;
-
-        var y1 = circle.attr("cy");
-        var y2 = point.y;
-
-        return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (circle.attr('r') - RADIUS_BUF);
-      }
-
       // Draws a circle of radius r at the given lng, lat projected onto map
       function drawSpotlight(lng, lat, r, data) {
         var xyPos = lngLatToXY(lng, lat);
@@ -157,9 +177,9 @@
       }
 
       // Draws circles on each data point in the selected color- if color is "default", color encode pass/fail score
-      function drawPoints(data, color) {
+      function drawPoints(data) {
         let points = svg.selectAll('circle');
-        let updatedPoints = points.data(data, d => d !== undefined ? d.name : null);
+        let updatedPoints = points.data(data, d => d === undefined ? null : d.name);
         let enterSelection = updatedPoints.enter();
         let newPoints = enterSelection.append('circle')
                           .attr('r', 4)
@@ -170,8 +190,7 @@
                             return lngLatToXY(d.lng, d.lat).y; 
                            })
                           .style('fill', function(d) {
-                            if (color == "default")  return d3.interpolateRdYlGn(d.score/100);
-                            else return color;
+                            return intersection.has(d)? INTERSECTION_COLOR : d3.interpolateRdYlGn(d.score/100);
                           })
                           .attr('opacity', 1)
                           .on('mouseover', function(d) {
@@ -183,16 +202,19 @@
                           .on('mouseout', function(d) {
                             svg.selectAll('text').remove()
                           });
-        // exit selection, remove anything not contained in that selection
-        updatedPoints.exit().remove(); // don't think this is working at the moment- points are drawing over each other
+        updatedPoints.exit().remove();
       }
 
       d3.select('#searchbox').on('keyup', function() {
         var inputText = document.getElementById('searchbox').value.toUpperCase();
         const matches = allData.filter(d => d.name.toUpperCase().includes(inputText));
-        console.log("Matches: ", matches);
         svg.selectAll('myCircles').remove();
         drawPoints(matches, 'pink'); // redraw circles
+        //intersect = getSelection(spotlightA, spotlightB, allData); // select points in A and B
+        //drawPoints(intersect, 'purple'); // draw these points
+        spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
+        spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
+        
       });
 
       // Callback for dragging- need to learn how to pass in data
