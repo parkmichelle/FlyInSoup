@@ -8,6 +8,7 @@
   </head>
 
   <body>
+    <svg id='vis'></svg>
     <input type="text" id="searchbox" 
       placeholder="Search for restaurants..">
 
@@ -17,7 +18,14 @@
       <div>Show restaurants with no score</div>
     </label>
 
-    <svg id='vis'></svg>
+    <div>Circle A: </div><div id="textA">120</div>
+    <input type="range" min="1" max="240" id="nRadiusA">
+
+    <div>Circle B: </div><div id="textB">120</div>
+    <input type="range" min="1" max="240" id="nRadiusB">
+
+
+    
 
     <script>
       /*
@@ -36,6 +44,7 @@
       const SPOTLIGHT_COLOR = "rgb(143, 166, 203, .3)";
       const DEFAULT_SPOTLIGHT_RADIUS = 120;
       const RADIUS_BUF = 0;
+      const NAMES = ['a', 'b'];
       const DEFAULT_SPOTLIGHT_A = {
         name: "HONG KONG RESTAURANT",
         grade: "Pass",
@@ -93,6 +102,8 @@
          .attr('xlink:href', 'media/map.svg');
 
       var allData;
+      var spotlightA;
+      var spotlightB;
       // Read in data
       d3.csv('data/data.csv', function(d) {
         return {
@@ -111,12 +122,32 @@
 
         updateIntersection(allData, circleA, circleB);
 
-        drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
-        drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
+        spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData, NAMES[0]);
+        spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData, NAMES[1]);
         drawPoints(allData, 'default');
         
         addScale();
+
+        d3.select("#nRadiusA").on("input", function() {
+        update(+this.value, NAMES[0]);
+        });
+        d3.select("#nRadiusB").on("input", function() {
+        update(+this.value, NAMES[1]);
+        });
+
+
       });
+
+      // Updates the circle size and text based on radius
+      function update(nRadius, id) {
+        // adjust the text on the range slider
+        d3.select("#nRadius-value").text(nRadius);
+        d3.select("#text" + id).text(nRadius);
+
+        // update the circle radius
+        d3.select('#' + id).attr('r', nRadius);
+      }
+
 
       function updateIntersection(data, circleA, circleB) {
          const intersectionDataPoints = data.filter(function(d) {
@@ -168,7 +199,7 @@
       }
 
       // Draws a circle of radius r at the given lng, lat projected onto map
-      function drawSpotlight(lng, lat, r, data) {
+      function drawSpotlight(lng, lat, r, data, id) {
         var xyPos = lngLatToXY(lng, lat);
         var circle = svg.append('circle');
 
@@ -176,10 +207,11 @@
               .attr('cx', xyPos.x)
               .attr('cy', xyPos.y)
               .attr('z-index', 0)
+              .attr('id', id)
               .style('fill', SPOTLIGHT_COLOR)
               .call(d3.drag().on('drag', callback));
 
-        //getSelection(circle, data);
+        return circle;
       }
 
       // Draws circles on each data point in the selected color- if color is "default", color encode pass/fail score
@@ -215,8 +247,8 @@
       d3.select('#searchbox').on('keyup', function() {
         var inputText = document.getElementById('searchbox').value.toUpperCase();
         const matches = allData.filter(d => d.name.toUpperCase().includes(inputText));
-        drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
-        drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
+        spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData, NAMES[0]);
+        spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData, NAMES[1]);
         
         drawPoints(matches); // redraw circles
       });
