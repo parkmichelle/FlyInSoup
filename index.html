@@ -158,9 +158,10 @@
 
       // Draws circles on each data point in the selected color- if color is "default", color encode pass/fail score
       function drawPoints(data, color) {
-        var points = svg.selectAll('myCircles')
-                        .data(data)
-                        .enter().append('circle')
+        let points = svg.selectAll('circle');
+        let updatedPoints = points.data(data, d => d !== undefined ? d.name : null);
+        let enterSelection = updatedPoints.enter();
+        let newPoints = enterSelection.append('circle')
                           .attr('r', 4)
                           .attr('cx', function(d) { 
                             return lngLatToXY(d.lng, d.lat).x; 
@@ -183,7 +184,7 @@
                             svg.selectAll('text').remove()
                           });
         // exit selection, remove anything not contained in that selection
-        points.exit().remove(); // don't think this is working at the moment- points are drawing over each other
+        updatedPoints.exit().remove(); // don't think this is working at the moment- points are drawing over each other
       }
 
       d3.select('#searchbox').on('keyup', function() {
