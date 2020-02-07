@@ -8,6 +8,9 @@
   </head>
 
   <body>
+    <input type="text" id="searchbox" 
+      placeholder="Search for restaurants..">
+
     <svg id='vis'></svg>
 
     <script>
@@ -91,8 +94,7 @@
         intersect = getSelection(spotlightA, spotlightB, allData); // select points in A and B
         drawPoints(intersect, 'purple'); // draw these points
         addScale();
- });
-
+     });
 
       // Converts lng, lat pair to x, y on map
       // Could optimize by using this to add property to data upon read in
@@ -184,15 +186,23 @@
         points.exit().remove(); // don't think this is working at the moment- points are drawing over each other
       }
 
+      d3.select('#searchbox').on('keyup', function() {
+        var inputText = document.getElementById('searchbox').value.toUpperCase();
+        const matches = allData.filter(d => d.name.toUpperCase().includes(inputText));
+        console.log("Matches: ", matches);
+        svg.selectAll('myCircles').remove();
+        drawPoints(matches, 'pink'); // redraw circles
+      });
+
       // Callback for dragging- need to learn how to pass in data
       // Need to pass in the data sets and other svg so we can re-calculate and plot intersection
-    function callback() {
-      d3.select(this)
-        .attr('cx', d3.event.x)
-        .attr('cy', d3.event.y);
-      
-      //getSelection(this, data);
-  }
+      function callback() {
+        d3.select(this)
+          .attr('cx', d3.event.x)
+          .attr('cy', d3.event.y);
+        
+        //getSelection(this, data);
+      }
     </script>
 
   </body>
