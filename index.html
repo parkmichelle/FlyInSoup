@@ -169,11 +169,11 @@
         circle.attr('r', r)
               .attr('cx', xyPos.x)
               .attr('cy', xyPos.y)
+              .attr('z-index', 0)
               .style('fill', SPOTLIGHT_COLOR)
               .call(d3.drag().on('drag', callback));
 
         //getSelection(circle, data);
-        return circle;
       }
 
       // Draws circles on each data point in the selected color- if color is "default", color encode pass/fail score
