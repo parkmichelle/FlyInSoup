@@ -80,6 +80,8 @@
          .attr('xlink:href', 'media/map.svg');
 
       var allData;
+      var spotlight_A;
+      var spotlight_B;
       // Read in data
       d3.csv('data/data.csv', function(d) {
         return {
@@ -213,7 +215,9 @@
                             svg.selectAll('text').remove()
                           });
         // exit selection, remove anything not contained in that selection
-        points.exit().remove(); // don't think this is working at the moment- points are drawing over each other
+        points.exit().remove(); 
+        // .exit().color(gray)
+        // don't think this is working at the moment- points are drawing over each other
       }
 
       d3.select('#searchbox').on('keyup', function() {
@@ -231,7 +235,9 @@
           .attr('cx', d3.event.x)
           .attr('cy', d3.event.y);
         
-       // drawPoints(getSelection(d3.select(this), otherCircle, data), 'purple');
+        drawPoints(getSelection(spotlight_A, spotlight_B, allData), 'purple');
+        // run .data again with filtered points
+        // get rid of sqrt
       }
 
     </script>
