@@ -10,8 +10,13 @@
   <body>
     <input type="text" id="searchbox" 
       placeholder="Search for restaurants..">
-
     <svg id='vis'></svg>
+    <div>Circle A: </div><div id="textA">120</div>
+    <input type="range" min="1" max="240" id="nRadiusA">
+
+    <div>Circle B: </div><div id="textB">120</div>
+    <input type="range" min="1" max="240" id="nRadiusB">
+    
 
     <script>
       /*
@@ -45,6 +50,7 @@
         lng: -122.17126,
         address: "170 STANFORD SHOPPING CENTER ,PALO ALTO, CA 94304"
       };
+      const NAMES = ['a', 'b'];
 
       // Set up size
       var mapWidth = 1000; var mapHeight = 750;
@@ -74,6 +80,8 @@
          .attr('xlink:href', 'media/map.svg');
 
       var allData;
+      var spotlight_A;
+      var spotlight_B;
       // Read in data
       d3.csv('data/data.csv', function(d) {
         return {
@@ -87,14 +95,33 @@
       }).then(function(data) {
         allData = data; // save data into var
         drawPoints(allData, 'default');
-
-        spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
-        spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
-        
-        intersect = getSelection(spotlightA, spotlightB, allData); // select points in A and B
-        drawPoints(intersect, 'purple'); // draw these points
-        addScale();
+          spotlight_A = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, NAMES[0]);
+          spotlight_B = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, NAMES[1]);
+          makeDraggable(spotlight_A, spotlight_B, allData, 'a');
+          makeDraggable(spotlight_A, spotlight_B, allData, 'b');
+          intersect = getSelection(spotlight_A, spotlight_B, allData); // select points in A and B
+          drawPoints(intersect, 'purple'); // draw these points
      });
+
+      addScale();
+
+      d3.select("#nRadiusA").on("input", function() {
+        update(+this.value, NAMES[0]);
+        });
+      d3.select("#nRadiusB").on("input", function() {
+        update(+this.value, NAMES[1]);
+        });
+
+      // Updates the circle size and text based on radius
+      function update(nRadius, id) {
+        // adjust the text on the range slider
+        d3.select("#nRadius-value").text(nRadius);
+        d3.select("#text" + id).text(nRadius);
+
+        // update the circle radius
+        svg.selectAll("circle." + id) 
+        .attr("r", nRadius);
+    }
 
       // Converts lng, lat pair to x, y on map
       // Could optimize by using this to add property to data upon read in
@@ -142,18 +169,23 @@
       }
 
       // Draws a circle of radius r at the given lng, lat projected onto map
-      function drawSpotlight(lng, lat, r, data) {
+      function drawSpotlight(lng, lat, r, id) {
         var xyPos = lngLatToXY(lng, lat);
         var circle = svg.append('circle');
 
         circle.attr('r', r)
               .attr('cx', xyPos.x)
               .attr('cy', xyPos.y)
-              .style('fill', SPOTLIGHT_COLOR)
-              .call(d3.drag().on('drag', callback));
+              .attr('class', id)
+              .style('fill', SPOTLIGHT_COLOR);
 
         //getSelection(circle, data);
         return circle;
+      }
+
+      function makeDraggable(cA, cB, data, id) {
+        if (id == 'a') cA.call(d3.drag().on('drag', callback));
+        else cB.call(d3.drag().on('drag', callback));
       }
 
       // Draws circles on each data point in the selected color- if color is "default", color encode pass/fail score
@@ -184,6 +216,7 @@
                             svg.selectAll('text').remove()
                           });
         // exit selection, remove anything not contained in that selection
+
         updatedPoints.exit().remove(); // don't think this is working at the moment- points are drawing over each other
       }
 
@@ -202,8 +235,11 @@
           .attr('cx', d3.event.x)
           .attr('cy', d3.event.y);
         
-        //getSelection(this, data);
+        drawPoints(getSelection(spotlight_A, spotlight_B, allData), 'purple');
+        // run .data again with filtered points
+        // get rid of sqrt
       }
+
     </script>
 
   </body>
