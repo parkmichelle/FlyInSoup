@@ -88,10 +88,12 @@
         allData = data; // save data into var
         drawPoints(allData, 'default');
 
-        spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
-        spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
         
-        intersect = getSelection(spotlightA, spotlightB, allData); // select points in A and B
+      SPOTLIGHT_A = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
+      SPOTLIGHT_B = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
+        
+        
+        intersect = getSelection(SPOTLIGHT_A, SPOTLIGHT_B, allData); // select points in A and B
         drawPoints(intersect, 'purple'); // draw these points
         addScale();
      });
@@ -203,6 +205,7 @@
         
         //getSelection(this, data);
       }
+
     </script>
 
   </body>
