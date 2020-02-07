@@ -1,7 +1,7 @@
 <html>
 
   <head>
-    <script src='https://d3js.org/d3.v5.min.js'></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
     <script src="https://d3js.org/d3-selection.v1.min.js"></script>
     <script src="https://d3js.org/d3-drag.v1.min.js"></script>
@@ -25,8 +25,10 @@
       */
       
       // Constants
-      const SPOTLIGHT_COLOR = "rgba(198, 45, 205, 0.6)";
+      //const SPOTLIGHT_COLOR = "rgba(198, 45, 205, 0.6)";
+      const SPOTLIGHT_COLOR = "rgb(143, 166, 203, .3)";
       const DEFAULT_SPOTLIGHT_RADIUS = 120;
+      const RADIUS_BUF = 10;
       const DEFAULT_SPOTLIGHT_A = {
         name: "HONG KONG RESTAURANT",
         grade: "Pass",
@@ -83,12 +85,16 @@
           address: d.Adress
         };
       }).then(function(data) {
-        console.log(data);
         allData = data; // save data into var
-        drawPoints(allData, 'green');
-        spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS);
-        spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS);
-      });
+        drawPoints(allData, 'default');
+
+        spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
+        spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
+        
+        intersect = getSelection(spotlightA, spotlightB, allData); // select points in A and B
+        drawPoints(intersect, 'purple'); // draw these points
+        addScale();
+     });
 
       // Converts lng, lat pair to x, y on map
       // Could optimize by using this to add property to data upon read in
@@ -98,21 +104,62 @@
         return {x: x, y: y}
       }
 
+      // Displays the colorscale
+      // Src: https://github.com/d3/d3-scale-chromatic/blob/master/README.md#interpolateRainbow
+      function addScale() {
+
+      var colorScale = d3.scaleSequential(d3.interpolateRdYlGn).domain([0, mapWidth]);
+
+        var bars = svg.selectAll(".bars")
+          .data(d3.range(mapWidth), function(d) { return d; })
+          .enter().append("rect")
+          .attr("class", "bars")
+          .attr("x", function(d, i) { return i; })
+          .attr("y", 0)
+          .attr("height", 50)
+          .attr("width", 1)
+          .style("fill", function(d, i ) { return colorScale(d); })
+    
+      }
+
+      // Returns points that fall in the intersection of the 2 provided circles
+      function getSelection(circle1, circle2, data) {
+        var newData = data.filter(function(d) {
+          return inCircle(circle1, lngLatToXY(d.lng, d.lat)) && inCircle(circle2, lngLatToXY(d.lng, d.lat));
+        });
+        return newData;
+      }
+
+      // Calculates whether a point lies within a circle, using Euclidean distance
+      function inCircle(circle, point) {
+        var x1 = circle.attr("cx");
+        var x2 = point.x;
+
+        var y1 = circle.attr("cy");
+        var y2 = point.y;
+
+        return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (circle.attr('r') - RADIUS_BUF);
+      }
+
       // Draws a circle of radius r at the given lng, lat projected onto map
-      function drawSpotlight(lng, lat, r) {
+      function drawSpotlight(lng, lat, r, data) {
         var xyPos = lngLatToXY(lng, lat);
         var circle = svg.append('circle');
+
         circle.attr('r', r)
               .attr('cx', xyPos.x)
               .attr('cy', xyPos.y)
-              .style('fill', SPOTLIGHT_COLOR);
+              .style('fill', SPOTLIGHT_COLOR)
+              .call(d3.drag().on('drag', callback));
+
+        //getSelection(circle, data);
         return circle;
       }
 
-      // Draw circular points for given inputData
-      function drawPoints(inputData, color) {
+      // Draws circles on each data point in the selected color- if color is "default", color encode pass/fail score
+      function drawPoints(data, color) {
         var points = svg.selectAll('myCircles')
-                        .data(inputData)
+                        .data(data)
                         .enter().append('circle')
                           .attr('r', 4)
                           .attr('cx', function(d) { 
@@ -121,9 +168,11 @@
                           .attr('cy', function(d) { 
                             return lngLatToXY(d.lng, d.lat).y; 
                            })
-                          .style('fill', color)
-
-                          // Adding mouseover for restaurant name for debugging
+                          .style('fill', function(d) {
+                            if (color == "default")  return d3.interpolateRdYlGn(d.score/100);
+                            else return color;
+                          })
+                          .attr('opacity', 1)
                           .on('mouseover', function(d) {
                               svg.append('text')
                                  .attr('x', lngLatToXY(d.lng, d.lat).x + 10)
@@ -132,8 +181,9 @@
                               })
                           .on('mouseout', function(d) {
                             svg.selectAll('text').remove()
-                          })
-                        .exit().remove();
+                          });
+        // exit selection, remove anything not contained in that selection
+        points.exit().remove(); // don't think this is working at the moment- points are drawing over each other
       }
 
       d3.select('#searchbox').on('keyup', function() {
@@ -143,6 +193,16 @@
         svg.selectAll('myCircles').remove();
         drawPoints(matches, 'pink'); // redraw circles
       });
+
+      // Callback for dragging- need to learn how to pass in data
+      // Need to pass in the data sets and other svg so we can re-calculate and plot intersection
+      function callback() {
+        d3.select(this)
+          .attr('cx', d3.event.x)
+          .attr('cy', d3.event.y);
+        
+        //getSelection(this, data);
+      }
     </script>
 
   </body>
