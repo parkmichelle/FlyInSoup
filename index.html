@@ -11,6 +11,12 @@
     <input type="text" id="searchbox" 
       placeholder="Search for restaurants..">
 
+    <label class="switch">
+      <input id="showNulls" type="checkbox">
+      <span class="slider round"></span>
+      <div>Show restaurants with no score</div>
+    </label>
+
     <svg id='vis'></svg>
 
     <script>
@@ -104,10 +110,10 @@
         var circleB = new Circle(lngLatToXY(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat), DEFAULT_SPOTLIGHT_RADIUS);
 
         updateIntersection(allData, circleA, circleB);
-        drawPoints(allData, 'default');
 
         drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
         drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
+        drawPoints(allData, 'default');
         
         addScale();
       });
@@ -178,10 +184,11 @@
 
       // Draws circles on each data point in the selected color- if color is "default", color encode pass/fail score
       function drawPoints(data) {
-        let points = svg.selectAll('circle');
+        let points = svg.selectAll('#dataCircle');
         let updatedPoints = points.data(data, d => d === undefined ? null : d.name);
         let enterSelection = updatedPoints.enter();
         let newPoints = enterSelection.append('circle')
+                          .attr('id', 'dataCircle')
                           .attr('r', 4)
                           .attr('cx', function(d) { 
                             return lngLatToXY(d.lng, d.lat).x; 
@@ -208,13 +215,10 @@
       d3.select('#searchbox').on('keyup', function() {
         var inputText = document.getElementById('searchbox').value.toUpperCase();
         const matches = allData.filter(d => d.name.toUpperCase().includes(inputText));
-        svg.selectAll('myCircles').remove();
-        drawPoints(matches, 'pink'); // redraw circles
-        //intersect = getSelection(spotlightA, spotlightB, allData); // select points in A and B
-        //drawPoints(intersect, 'purple'); // draw these points
-        spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
-        spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
+        drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
+        drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData);
         
+        drawPoints(matches); // redraw circles
       });
 
       // Callback for dragging- need to learn how to pass in data
