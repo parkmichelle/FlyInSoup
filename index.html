@@ -43,7 +43,7 @@
       const INTERSECTION_COLOR = 'purple';
       const SPOTLIGHT_COLOR = "rgb(143, 166, 203, .3)";
       const DEFAULT_SPOTLIGHT_RADIUS = 120;
-      const RADIUS_BUF = 0;
+      const RADIUS_BUF = 3;
       const NAMES = ['a', 'b'];
       const DEFAULT_SPOTLIGHT_A = {
         name: "HONG KONG RESTAURANT",
@@ -104,6 +104,8 @@
       var allData;
       var spotlightA;
       var spotlightB;
+      var circleA;
+      var circleB;
       // Read in data
       d3.csv('data/data.csv', function(d) {
         return {
@@ -117,22 +119,17 @@
       }).then(function(data) {
         allData = data; // save data into var
 
-        var circleA = new Circle(lngLatToXY(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat), DEFAULT_SPOTLIGHT_RADIUS);
-        var circleB = new Circle(lngLatToXY(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat), DEFAULT_SPOTLIGHT_RADIUS);
-
-        updateIntersection(allData, circleA, circleB);
-
         spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData, NAMES[0]);
         spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData, NAMES[1]);
-        drawPoints(allData, 'default');
-        
+
+        drawPoints(getIntersection(allData, spotlightA, spotlightB), 'purple', 'intersection');        
         addScale();
 
         d3.select("#nRadiusA").on("input", function() {
-        update(+this.value, NAMES[0]);
+          update(+this.value, NAMES[0]);
         });
         d3.select("#nRadiusB").on("input", function() {
-        update(+this.value, NAMES[1]);
+          update(+this.value, NAMES[1]);
         });
 
 
@@ -146,30 +143,30 @@
 
         // update the circle radius
         d3.select('#' + id).attr('r', nRadius);
+
+        var inter = getIntersection(allData, spotlightA, spotlightB);
+        drawPoints(inter, 'purple', 'intersection');
+
       }
 
 
-      function updateIntersection(data, circleA, circleB) {
-         const intersectionDataPoints = data.filter(function(d) {
-           return inCircle(circleA, lngLatToXY(d.lng, d.lat)) 
-             && inCircle(circleB, lngLatToXY(d.lng, d.lat));
+        function getIntersection(data, spotlightA, spotlightB) {
+         var intersection = data.filter(function(d) {
+           return inCircle(spotlightA, lngLatToXY(d.lng, d.lat)) 
+             && inCircle(spotlightB, lngLatToXY(d.lng, d.lat));
          });
-         intersection.clear();
-         for (i = 0; i < intersectionDataPoints.length; i++) {
-           // TODO: Can speed this up by using unique id instead of obj
-           intersection.add(intersectionDataPoints[i]);
-         }
+          return intersection;
       }
 
       // Calculates whether a point lies within a circle, using Euclidean distance
       function inCircle(circle, point) {
-        var x1 = circle.centerXY.x;
+        var x1 = circle.attr('cx');
         var x2 = point.x;
  
-        var y1 = circle.centerXY.y;
+        var y1 = circle.attr('cy');
         var y2 = point.y;
 
-        return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (circle.r - RADIUS_BUF);
+        return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (circle.attr('r') - RADIUS_BUF);
       }
 
       // Converts lng, lat pair to x, y on map
@@ -209,18 +206,18 @@
               .attr('z-index', 0)
               .attr('id', id)
               .style('fill', SPOTLIGHT_COLOR)
-              .call(d3.drag().on('drag', callback));
+              .call(d3.drag().on('drag', redraw));
 
         return circle;
       }
 
       // Draws circles on each data point in the selected color- if color is "default", color encode pass/fail score
-      function drawPoints(data) {
-        let points = svg.selectAll('#dataCircle');
+      function drawPoints(data, color, id) {
+        let points = svg.selectAll('#' + id);
         let updatedPoints = points.data(data, d => d === undefined ? null : d.name);
         let enterSelection = updatedPoints.enter();
         let newPoints = enterSelection.append('circle')
-                          .attr('id', 'dataCircle')
+                          .attr('id', id)
                           .attr('r', 4)
                           .attr('cx', function(d) { 
                             return lngLatToXY(d.lng, d.lat).x; 
@@ -229,7 +226,8 @@
                             return lngLatToXY(d.lng, d.lat).y; 
                            })
                           .style('fill', function(d) {
-                            return intersection.has(d)? INTERSECTION_COLOR : d3.interpolateRdYlGn(d.score/100);
+                            return color;
+                            //return intersection.has(d)? INTERSECTION_COLOR : d3.interpolateRdYlGn(d.score/100);
                           })
                           .attr('opacity', 1)
                           .on('mouseover', function(d) {
@@ -241,7 +239,7 @@
                           .on('mouseout', function(d) {
                             svg.selectAll('text').remove()
                           });
-        updatedPoints.exit().remove();
+          updatedPoints.exit().remove();
       }
 
       d3.select('#searchbox').on('keyup', function() {
@@ -250,17 +248,18 @@
         spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData, NAMES[0]);
         spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData, NAMES[1]);
         
-        drawPoints(matches); // redraw circles
+        drawPoints(matches, 'purple', 'intersection'); // redraw circles
       });
 
       // Callback for dragging- need to learn how to pass in data
       // Need to pass in the data sets and other svg so we can re-calculate and plot intersection
-      function callback() {
+      function redraw() {
         d3.select(this)
           .attr('cx', d3.event.x)
           .attr('cy', d3.event.y);
-        
-        //getSelection(this, data);
+
+        var inter = getIntersection(allData, spotlightA, spotlightB);
+        drawPoints(inter, 'purple', 'intersection');
       }
     </script>
 
