@@ -11,11 +11,7 @@
     <input type="text" id="searchbox" 
       placeholder="Search for restaurants..">
 
-    <label class="switch">
-      <input id="showNulls" type="checkbox">
-      <span class="slider round"></span>
-      <div>Show restaurants with no score</div>
-    </label>
+    <p>Note that restaurants with no scores are not displayed</p>
 
     <svg id='vis'></svg>
 
@@ -104,7 +100,7 @@
           address: d.Adress
         };
       }).then(function(data) {
-        allData = data; // save data into var
+        allData = data.filter(function(d) { return d.score; });
 
         var circleA = new Circle(lngLatToXY(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat), DEFAULT_SPOTLIGHT_RADIUS);
         var circleB = new Circle(lngLatToXY(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat), DEFAULT_SPOTLIGHT_RADIUS);
