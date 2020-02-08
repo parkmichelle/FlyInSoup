@@ -5,24 +5,43 @@
     <script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
     <script src="https://d3js.org/d3-selection.v1.min.js"></script>
     <script src="https://d3js.org/d3-drag.v1.min.js"></script>
+
+    <link rel="stylesheet" href="style.css"> 
+    <link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet">
   </head>
 
   <body>
-    <svg id='vis'></svg>
-    <input type="text" id="searchbox" 
-      placeholder="Search for restaurants..">
+    <div class='horizontal-flex'>
+    
+      <div class='vertical-flex'>
 
-    <label class="switch">
-      <input id="showNulls" type="checkbox">
-      <span class="slider round"></span>
-      <div>Show restaurants with no score</div>
-    </label>
+        <h1> there's a fly in me soup</h1>
 
-    <div>Circle A: </div><div id="textA">120</div>
-    <input type="range" min="1" max="240" id="nRadiusA">
+        <p>mishel parc nd stefni noo</p>
 
-    <div>Circle B: </div><div id="textB">120</div>
-    <input type="range" min="1" max="240" id="nRadiusB">
+        <p>here's a little explanation! have fun exploring restaurants. love, michelle & steph</p>
+
+        <div>
+          <input type="text" id="searchbox" 
+            placeholder="Search for restaurants..">
+          <label class="switch">
+            <input id="showNulls" type="checkbox">
+            <span class="slider round"></span>
+            <div>Show restaurants with no score</div>
+          </label>
+        </div>
+  
+        <div>
+          <div>Circle A: </div><div id="textA">120</div>
+          <input type="range" min="1" max="240" id="nRadiusA">
+        </div>
+    
+        <div>
+          <div>Circle B: </div><div id="textB">120</div>
+          <input type="range" min="1" max="240" id="nRadiusB">
+        </div>
+      </div>
+  </div>
 
 
     
@@ -88,7 +107,7 @@
       // projection([lon, lat]) returns [x, y]
       // projection.invert([x, y]) returns [lon, lat]
       // Add an SVG element to the DOM
-      var svg = d3.select('body').append('svg')
+      var svg = d3.select('.horizontal-flex').append('svg')
                   .attr('width', mapWidth)
                   .attr('height', mapHeight);
 
