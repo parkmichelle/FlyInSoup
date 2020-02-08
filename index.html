@@ -117,6 +117,10 @@
       var spotlightB;
       var circleA;
       var circleB;
+
+      var passNameSearchData;
+      var spotlightIntersectionData;
+
       // Read in data
       d3.csv('data/data.csv', function(d) {
         return {
@@ -131,42 +135,27 @@
         origData = data;
         allData = data.filter(function(d) { return d.score; });
 
+        // initialize store of data points that pass the name search
+        passNameSearchData = allData;
+
         spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData, NAMES[0]);
         spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData, NAMES[1]);
 
-        var inter = getIntersection(allData, spotlightA, spotlightB);
-        drawPoints(inter, 'purple', 'intersection');   
-        drawPoints(getOuter(inter), 'gray', 'outer');    
-
+        // initialize store of data points that pass spotlight intersection
+        spotlightIntersectionData = getSpotlightIntersection(allData, spotlightA, spotlightB);
+        refreshPoints();
         addScale();
 
         d3.select("#nRadiusA").on("input", function() {
-          update(+this.value, NAMES[0]);
+          handleSpotlightResize(+this.value, NAMES[0]);
         });
         d3.select("#nRadiusB").on("input", function() {
-          update(+this.value, NAMES[1]);
+          handleSpotlightResize(+this.value, NAMES[1]);
         });
-
-
       });
 
-      // Updates the circle size and text based on radius
-      function update(nRadius, id) {
-        // adjust the text on the range slider
-        d3.select("#nRadius-value").text(nRadius);
-        d3.select("#text" + id).text(nRadius);
-
-        // update the circle radius
-        d3.select('#' + id).attr('r', nRadius);
-
-        var inter = getIntersection(allData, spotlightA, spotlightB);
-        drawPoints(inter, 'purple', 'intersection');
-        drawPoints(getOuter(inter), 'gray', 'outer'); 
-
-      }
-
       // Returns all data in the intersection of both spotlights
-      function getIntersection(data, spotlightA, spotlightB) {
+      function getSpotlightIntersection(data, spotlightA, spotlightB) {
          var intersection = data.filter(function(d) {
            return inCircle(spotlightA, lngLatToXY(d.lng, d.lat)) 
              && inCircle(spotlightB, lngLatToXY(d.lng, d.lat));
@@ -176,7 +165,7 @@
 
       // Returns all data not in the intersection of both spotlights
       function getOuter(data) {
-        var outer = origData.filter(function (d) {
+        var outer = allData.filter(function (d) {
           return !data.includes(d);
         });
         return outer;
@@ -204,9 +193,7 @@
       // Displays the colorscale
       // Src: https://github.com/d3/d3-scale-chromatic/blob/master/README.md#interpolateRainbow
       function addScale() {
-
       var colorScale = d3.scaleSequential(d3.interpolateRdYlGn).domain([0, mapWidth]);
-
         var bars = svg.selectAll(".bars")
           .data(d3.range(mapWidth), function(d) { return d; })
           .enter().append("rect")
@@ -216,7 +203,6 @@
           .attr("height", 50)
           .attr("width", 1)
           .style("fill", function(d, i ) { return colorScale(d); })
-    
       }
 
       // Draws a circle of radius r at the given lng, lat projected onto map
@@ -230,12 +216,13 @@
               .attr('z-index', 0)
               .attr('id', id)
               .style('fill', SPOTLIGHT_COLOR)
-              .call(d3.drag().on('drag', redraw));
+              .call(d3.drag().on('drag', handleSpotlightDrag));
 
         return circle;
       }
 
-      // Draws circles on each data point in the selected color- if color is "default", color encode pass/fail score
+      // Draws circles on each data point in the selected color- 
+      // if color is "default", color encode pass/fail score
       function drawPoints(data, color, id) {
         let points = svg.selectAll('#' + id);
         let updatedPoints = points.data(data, d => d === undefined ? null : d.name);
@@ -265,28 +252,59 @@
           updatedPoints.exit().remove();
       }
 
+
+      // Refreshes display by replotting data points according to current
+      // stores of spotlight intersection and name search data points
+      function refreshPoints() {
+        var highlightData = dataIntersection(spotlightIntersectionData, passNameSearchData);
+        drawPoints(highlightData, 'purple', 'passAll');
+        drawPoints(getOuter(highlightData), 'gray', 'notPassAll');
+      }
+
+      function dataIntersection(a, b) {
+        return a.filter(value => b.includes(value));
+      }
+
+      // Adds event handler for name search,
+      // updates global passNameSearchData with points that pass new name search
       d3.select('#searchbox').on('keyup', function() {
         var inputText = document.getElementById('searchbox').value.toUpperCase();
-        const matches = allData.filter(d => d.name.toUpperCase().includes(inputText));
-        spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData, NAMES[0]);
-        spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData, NAMES[1]);
-        
-        drawPoints(matches, 'purple', 'intersection'); // redraw circles
+        if (inputText === '') {
+          passNameSearchData = allData;
+        } else {
+          passNameSearchData = allData.filter(d => d.name.toUpperCase().includes(inputText));
+        }
+        refreshPoints(); 
       });
 
       // Callback for dragging- need to learn how to pass in data
       // Need to pass in the data sets and other svg so we can re-calculate and plot intersection
-      function redraw() {
+      function handleSpotlightDrag() {
+        // update position of spotlight svg element that was dragged
         d3.select(this)
           .attr('cx', d3.event.x)
           .attr('cy', d3.event.y);
+        
+        // update current spotlight intersection data points
+        spotlightIntersectionData = 
+          getSpotlightIntersection(allData, spotlightA, spotlightB);
 
-        var inter = getIntersection(allData, spotlightA, spotlightB);
-        drawPoints(inter, 'purple', 'intersection');
-
-        var outer = getOuter(inter);
-        drawPoints(outer, 'gray', 'outer');
+        refreshPoints();
       }
+
+      // Updates the circle size and text based on radius
+      function handleSpotlightResize(nRadius, id) {
+        // adjust the text on the range slider
+        d3.select("#nRadius-value").text(nRadius);
+        d3.select("#text" + id).text(nRadius);
+
+        // update the circle radius
+        d3.select('#' + id).attr('r', nRadius);
+
+        spotlightIntersectionData = getSpotlightIntersection(allData, spotlightA, spotlightB);
+        refreshPoints();
+      }
+
     </script>
 
   </body>
