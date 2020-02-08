@@ -43,7 +43,7 @@
       const INTERSECTION_COLOR = 'purple';
       const SPOTLIGHT_COLOR = "rgb(143, 166, 203, .3)";
       const DEFAULT_SPOTLIGHT_RADIUS = 120;
-      const RADIUS_BUF = 3;
+      const RADIUS_BUF = 0;
       const NAMES = ['a', 'b'];
       const DEFAULT_SPOTLIGHT_A = {
         name: "HONG KONG RESTAURANT",
@@ -72,8 +72,6 @@
         this.r = r;
       }
 
-      var intersection = new Set();
-
       // Set up size
       var mapWidth = 1000; var mapHeight = 750;
 
@@ -101,6 +99,7 @@
          .attr('height', mapHeight)
          .attr('xlink:href', 'media/map.svg');
 
+      var origData;
       var allData;
       var spotlightA;
       var spotlightB;
@@ -117,12 +116,16 @@
           address: d.Adress
         };
       }).then(function(data) {
+        origData = data;
         allData = data; // save data into var
 
         spotlightA = drawSpotlight(DEFAULT_SPOTLIGHT_A.lng, DEFAULT_SPOTLIGHT_A.lat, DEFAULT_SPOTLIGHT_RADIUS, allData, NAMES[0]);
         spotlightB = drawSpotlight(DEFAULT_SPOTLIGHT_B.lng, DEFAULT_SPOTLIGHT_B.lat, DEFAULT_SPOTLIGHT_RADIUS, allData, NAMES[1]);
 
-        drawPoints(getIntersection(allData, spotlightA, spotlightB), 'purple', 'intersection');        
+        var inter = getIntersection(allData, spotlightA, spotlightB);
+        drawPoints(inter, 'purple', 'intersection');   
+        drawPoints(getOuter(inter), 'gray', 'outer');    
+
         addScale();
 
         d3.select("#nRadiusA").on("input", function() {
@@ -146,16 +149,25 @@
 
         var inter = getIntersection(allData, spotlightA, spotlightB);
         drawPoints(inter, 'purple', 'intersection');
+        drawPoints(getOuter(inter), 'gray', 'outer'); 
 
       }
 
-
-        function getIntersection(data, spotlightA, spotlightB) {
+      // Returns all data in the intersection of both spotlights
+      function getIntersection(data, spotlightA, spotlightB) {
          var intersection = data.filter(function(d) {
            return inCircle(spotlightA, lngLatToXY(d.lng, d.lat)) 
              && inCircle(spotlightB, lngLatToXY(d.lng, d.lat));
          });
           return intersection;
+      }
+
+      // Returns all data not in the intersection of both spotlights
+      function getOuter(data) {
+        var outer = origData.filter(function (d) {
+          return !data.includes(d);
+        });
+        return outer;
       }
 
       // Calculates whether a point lies within a circle, using Euclidean distance
@@ -166,7 +178,7 @@
         var y1 = circle.attr('cy');
         var y2 = point.y;
 
-        return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (circle.attr('r') - RADIUS_BUF);
+        return ((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < (circle.attr('r') - RADIUS_BUF) * (circle.attr('r') - RADIUS_BUF);
       }
 
       // Converts lng, lat pair to x, y on map
@@ -227,7 +239,6 @@
                            })
                           .style('fill', function(d) {
                             return color;
-                            //return intersection.has(d)? INTERSECTION_COLOR : d3.interpolateRdYlGn(d.score/100);
                           })
                           .attr('opacity', 1)
                           .on('mouseover', function(d) {
@@ -260,6 +271,9 @@
 
         var inter = getIntersection(allData, spotlightA, spotlightB);
         drawPoints(inter, 'purple', 'intersection');
+
+        var outer = getOuter(inter);
+        drawPoints(outer, 'gray', 'outer');
       }
     </script>
 
