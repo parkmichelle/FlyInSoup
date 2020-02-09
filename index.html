@@ -69,7 +69,7 @@
       
       // Constants
       //const SPOTLIGHT_COLOR = "rgba(198, 45, 205, 0.6)";
-      const INTERSECTION_COLOR = 'purple';
+      const NO_HIGHLIGHT_COLOR = '#aaaaaa';
       const SPOTLIGHT_COLOR = "rgb(143, 166, 203)";
       const DEFAULT_SPOTLIGHT_RADIUS = 120;
       const RADIUS_BUF = 0;
@@ -242,8 +242,8 @@
       }
 
       // Draws circles on each data point in the selected color- 
-      // if color is "default", color encode pass/fail score
-      function drawPoints(data, color, id) {
+      // if color is not defined, color encodes pass/fail score
+      function drawPoints(data, id, color=null) {
         let points = svg.selectAll('#' + id);
         let updatedPoints = points.data(data, d => d === undefined ? null : d.name);
         let enterSelection = updatedPoints.enter();
@@ -257,7 +257,7 @@
                             return lngLatToXY(d.lng, d.lat).y; 
                            })
                           .style('fill', function(d) {
-                            return color;
+                            return color ? color : d3.interpolateRdYlGn(d.score/100);
                           })
                           .attr('opacity', 1)
                           .on('mouseover', function(d) {
@@ -282,8 +282,8 @@
         } else {
           highlightData = passNameSearchData;
         }
-        drawPoints(highlightData, 'purple', 'passAll');
-        drawPoints(getOuter(highlightData), 'gray', 'notPassAll');
+        drawPoints(highlightData, 'passAll');
+        drawPoints(getOuter(highlightData), 'notPassAll', color=NO_HIGHLIGHT_COLOR);
       }
 
       function dataIntersection(a, b) {
