@@ -163,6 +163,10 @@
 
         // initialize store of data points that pass spotlight intersection
         spotlightIntersectionData = getSpotlightIntersection(allData, spotlightA, spotlightB);
+
+        // draw initial background points
+        drawPoints(allData, 'background', color=NO_HIGHLIGHT_COLOR);
+
         refreshPoints();
         addScale();
 
@@ -245,8 +249,9 @@
       // Draws circles on each data point in the selected color- 
       // if color is not defined, color encodes pass/fail score
       function drawPoints(data, id, color=null) {
+        console.log(data);
         let points = svg.selectAll('#' + id);
-        let updatedPoints = points.data(data, d => d === undefined ? null : d.name);
+        let updatedPoints = points.data(data, d => d === undefined ? null : d.lng);
         let enterSelection = updatedPoints.enter();
         let newPoints = enterSelection.append('circle')
                           .attr('id', id)
@@ -284,7 +289,6 @@
           highlightData = passNameSearchData;
         }
         drawPoints(highlightData, 'passAll');
-        drawPoints(getOuter(highlightData), 'notPassAll', color=NO_HIGHLIGHT_COLOR);
       }
 
       function dataIntersection(a, b) {
