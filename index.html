@@ -27,21 +27,32 @@
           <p>Note that restaurants with no scores are not displayed</p>
         </div>
         
-        <div class='horizontal-flex'>
-        <img id="icon" src="media/intersect.png"></img>
-        </div>
+        <div id="spotlight-controls">
+          <!-- Toggle spotlights -->
+          <div class='horizontal-flex'>
+            <label class="switch">
+              <input type="checkbox" onchange="handleSpotlightToggle(this)" checked>
+              <span class="slider round"></span>
+            </label> 
+            <p>Use spotlights</p>
+          </div>
 
-        <div class='horizontal-flex'>
-        <div>
-          <div id="textB">120</div>
-          <input type="range" min="1" max="240" id="nRadiusB">
+          <div class='horizontal-flex'>
+            <img id="icon" src="media/intersect.png"></img>
+          </div>
+
+          <div class='horizontal-flex'>
+            <div>
+              <div id="textB">120</div>
+              <input type="range" min="1" max="240" id="nRadiusB">
+            </div>
+        
+            <div>
+              <div id="textA">120</div>
+              <input type="range" min="1" max="240" id="nRadiusA">
+            </div>
+          </div>
         </div>
-    
-        <div>
-          <div id="textA">120</div>
-          <input type="range" min="1" max="240" id="nRadiusA">
-        </div>
-      </div>
       </div>
     </div>
 
@@ -123,6 +134,8 @@
       var spotlightB;
       var circleA;
       var circleB;
+
+      var useSpotlights = true;
 
       var passNameSearchData;
       var spotlightIntersectionData;
@@ -263,7 +276,12 @@
       // Refreshes display by replotting data points according to current
       // stores of spotlight intersection and name search data points
       function refreshPoints() {
-        var highlightData = dataIntersection(spotlightIntersectionData, passNameSearchData);
+        var highlightData;
+        if (useSpotlights) {
+          highlightData = dataIntersection(spotlightIntersectionData, passNameSearchData);
+        } else {
+          highlightData = passNameSearchData;
+        }
         drawPoints(highlightData, 'purple', 'passAll');
         drawPoints(getOuter(highlightData), 'gray', 'notPassAll');
       }
@@ -309,6 +327,19 @@
         d3.select('#' + id).attr('r', nRadius);
 
         spotlightIntersectionData = getSpotlightIntersection(allData, spotlightA, spotlightB);
+        refreshPoints();
+      }
+
+      function handleSpotlightToggle(checkbox) {
+        useSpotlights = checkbox.checked;
+        if (!useSpotlights) {
+          spotlightA.attr('visibility', 'hidden');
+          spotlightB.attr('visibility', 'hidden');
+        } else {
+          spotlightA.attr('visibility', 'visible');
+          spotlightB.attr('visibility', 'visible');
+        }
+
         refreshPoints();
       }
 
