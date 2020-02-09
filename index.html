@@ -17,23 +17,29 @@
 
         <h1>Waiter, there's a fly in my soup!</h1>
         <h2>An interactive map of South Bay restaurant inspection scores</h2>
+        <div id="vertical-spacing"></div>
 
         <div>
           <input type="text" id="searchbox" 
             placeholder="Search for restaurants..">
           <img onclick="clearSearch()" class="search-clear" src="media/search_x.png"></img>
-          <p>Note that restaurants with no scores are not displayed</p>
+          <p class="small">Restaurants with no scores are not displayed.</p>
         </div>
+
+        <div id="vertical-spacing"></div>
         
         <div id="spotlight-controls">
           <!-- Toggle spotlights -->
-          <div class='horizontal-flex'>
+          <div class='row-flex'>
             <label class="switch">
               <input type="checkbox" onchange="handleSpotlightToggle(this)" checked>
               <span class="slider round"></span>
             </label> 
-            <p>Use spotlights</p>
+           <div id="horizontal-spacing"></div>
+          <div>Use spotlights</div>
           </div>
+
+          <div id="vertical-spacing"></div>
 
           <div class='horizontal-flex'>
             <img id="icon" src="media/intersect.png"></img>
@@ -41,15 +47,17 @@
 
           <div class='horizontal-flex'>
             <div>
-              <div id="textB">2.5</div>
+              <div id="textB">2.5 miles</div>
               <input type="range" min="1" max="394" id="nRadiusB">
             </div>
         
             <div>
-              <div id="textA">2.5</div>
+              <div id="textA">2.5 miles</div>
               <input type="range" min="1" max="394" id="nRadiusA">
             </div>
           </div>
+
+          <div id="vertical-spacing"></div>
 
           <p id='creator-names'>by stephanie niu & michelle park</p>
         </div>
@@ -161,7 +169,6 @@
       var spotlightIntersectionData;
 
       var milesPerR = getMilesPerR();
-      console.log(milesPerR);
 
       // Read in data
       d3.csv('data/data.csv', function(d) {
@@ -315,7 +322,6 @@
         var end = lngLatToXY(START_Y, START_X + 1);
 
         var dist = Math.sqrt((start.x - end.x) * (start.x - end.x) + (start.y - end.y) * (start.y - end.y));
-        console.log("dist", dist);
         // get map distance between start and end
         return MILES_PER_LAT/dist;
         // 
@@ -367,9 +373,10 @@
       // Updates the circle size and text based on radius
       function handleSpotlightResize(nRadius, id) {
         var dec = d3.format(".1f");
+
         // adjust the text on the range slider
-        d3.select("#nRadius-value").text(dec(nRadius*milesPerR));
-        d3.select("#text" + id).text(dec(nRadius*milesPerR));
+        d3.select("#nRadius-value").text(dec(nRadius*milesPerR) + " miles");
+        d3.select("#text" + id).text(dec(nRadius*milesPerR) + " miles");
 
         // update the circle radius
         d3.select('#' + id).attr('r', nRadius);

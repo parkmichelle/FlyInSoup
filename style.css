@@ -44,6 +44,14 @@ h2 {
   margin-right: auto;
 }
 
+#horizontal-spacing {
+  width: 10px;
+}
+
+#vertical-spacing {
+  height: 50px;
+}
+
 #legend-title {
   margin-left: auto;
   margin-right: auto;
@@ -116,8 +124,13 @@ h2 {
 }
 
 .search-clear {
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
+}
+
+#searchbox {
+  width: 200px;
+  height: 25px;
 }
 
 .tooltip {	
@@ -137,8 +150,10 @@ h2 {
 	flex-direction: column;
 }
 
-p {
-	width: 80%;
+.row-flex {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
 }
 
 /* Toggle slider styles from https://www.w3schools.com/howto/howto_css_switch.asp*/
@@ -146,8 +161,8 @@ p {
 .switch {
   position: relative;
   display: inline-block;
-  width: 60px;
-  height: 34px;
+  width: 54px;
+  height: 26px;
 }
 
 /* Hide default HTML checkbox */
@@ -155,6 +170,12 @@ p {
   opacity: 0;
   width: 0;
   height: 0;
+}
+
+/* Small text */
+.small {
+  font-size: 14px;
+  font-style: italic;
 }
 
 /* The slider */
@@ -173,8 +194,8 @@ p {
 .slider:before {
   position: absolute;
   content: "";
-  height: 26px;
-  width: 26px;
+  height: 20px;
+  width: 20px;
   left: 4px;
   bottom: 4px;
   background-color: white;
@@ -198,7 +219,7 @@ input:checked + .slider:before {
 
 /* Rounded sliders */
 .slider.round {
-  border-radius: 34px;
+  border-radius: 20px;
 }
 
 .slider.round:before {
