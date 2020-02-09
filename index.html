@@ -27,6 +27,9 @@
           <img onclick="clearSearch()" class="search-clear" src="media/search_x.png"></img>
           <p>Note that restaurants with no scores are not displayed</p>
         </div>
+
+        <div class = "scale">
+        </div>
         
         <div id="spotlight-controls">
           <!-- Toggle spotlights -->
@@ -73,6 +76,7 @@
       const NO_HIGHLIGHT_COLOR = '#aaaaaa';
       const SPOTLIGHT_COLOR = "rgb(143, 166, 203)";
       const DEFAULT_SPOTLIGHT_RADIUS = 120;
+      const SCALE_WIDTH = 200;
       const RADIUS_BUF = 0;
       const NAMES = ['a', 'b'];
       const DEFAULT_SPOTLIGHT_A = {
@@ -214,16 +218,18 @@
       // Displays the colorscale
       // Src: https://github.com/d3/d3-scale-chromatic/blob/master/README.md#interpolateRainbow
       function addScale() {
-      var colorScale = d3.scaleSequential(d3.interpolateRdYlGn).domain([0, mapWidth]);
-        var bars = svg.selectAll(".bars")
-          .data(d3.range(mapWidth), function(d) { return d; })
+
+        var colorScale = d3.scaleSequential(d3.interpolateRdYlGn).domain([0, SCALE_WIDTH]);
+        var bars = d3.select(".scale")
+          .selectAll('bars')
+          .data(d3.range(SCALE_WIDTH), function(d) { return d; })
           .enter().append("rect")
           .attr("class", "bars")
           .attr("x", function(d, i) { return i; })
           .attr("y", 0)
           .attr("height", 50)
           .attr("width", 1)
-          .style("fill", function(d, i ) { return colorScale(d); })
+          .style("fill", function(d, i) { return colorScale(d); })
       }
 
       // Draws a circle of radius r at the given lng, lat projected onto map

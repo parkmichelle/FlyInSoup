@@ -1,4 +1,6 @@
-
+.bars {
+  border: 1px solid black;
+}
 
 h1 {
 	font-family: 'Montserrat', sans-serif;
