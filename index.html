@@ -26,16 +26,22 @@
             placeholder="Search for restaurants..">
           <p>Note that restaurants with no scores are not displayed</p>
         </div>
-  
+        
+        <div class='horizontal-flex'>
+        <img id="icon" src="media/intersect.png"></img>
+        </div>
+
+        <div class='horizontal-flex'>
         <div>
-          <div>Circle A: </div><div id="textA">120</div>
-          <input type="range" min="1" max="240" id="nRadiusA">
+          <div id="textB">120</div>
+          <input type="range" min="1" max="240" id="nRadiusB">
         </div>
     
         <div>
-          <div>Circle B: </div><div id="textB">120</div>
-          <input type="range" min="1" max="240" id="nRadiusB">
+          <div id="textA">120</div>
+          <input type="range" min="1" max="240" id="nRadiusA">
         </div>
+      </div>
       </div>
     </div>
 
@@ -53,7 +59,7 @@
       // Constants
       //const SPOTLIGHT_COLOR = "rgba(198, 45, 205, 0.6)";
       const INTERSECTION_COLOR = 'purple';
-      const SPOTLIGHT_COLOR = "rgb(143, 166, 203, .3)";
+      const SPOTLIGHT_COLOR = "rgb(143, 166, 203)";
       const DEFAULT_SPOTLIGHT_RADIUS = 120;
       const RADIUS_BUF = 0;
       const NAMES = ['a', 'b'];
@@ -215,6 +221,7 @@
               .attr('cy', xyPos.y)
               .attr('z-index', 0)
               .attr('id', id)
+              .attr('opacity', 0.3)
               .style('fill', SPOTLIGHT_COLOR)
               .call(d3.drag().on('drag', handleSpotlightDrag));
 
