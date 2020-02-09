@@ -135,6 +135,7 @@
       var spotlightB;
       var circleA;
       var circleB;
+      var isDragging = false;
 
       var useSpotlights = true;
 
@@ -237,7 +238,13 @@
               .attr('id', id)
               .attr('opacity', 0.3)
               .style('fill', SPOTLIGHT_COLOR)
-              .call(d3.drag().on('drag', handleSpotlightDrag));
+              .call(d3.drag().on('start', function(d) {
+                                  isDragging = true;
+                              })
+                              .on('drag', handleSpotlightDrag)
+                              .on('end', function(d) {
+                                  isDragging = false;
+                              }));  
 
         return circle;
       }
@@ -262,10 +269,12 @@
                           })
                           .attr('opacity', 1)
                           .on('mouseover', function(d) {
+                              if (!isDragging) {
                               svg.append('text')
                                  .attr('x', lngLatToXY(d.lng, d.lat).x + 10)
                                  .attr('y', lngLatToXY(d.lng, d.lat).y + 5)
                                  .text(d.name + ' ' + d.score)
+                               }
                               })
                           .on('mouseout', function(d) {
                             svg.selectAll('text').remove()
