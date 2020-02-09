@@ -245,6 +245,7 @@
 
       // Displays the colorscale
       // Src: https://github.com/d3/d3-scale-chromatic/blob/master/README.md#interpolateRainbow
+
       function addPointColorScale() {
 
       var colorScale = d3.scaleSequential(d3.interpolateRdYlGn).domain([0, mapWidth]);
@@ -258,6 +259,7 @@
         .attr("height", 20)
         .attr("width", 1)
         .style("fill", function(d, i ) { return colorScale(d); })
+
       }
 
       // Draws a circle of radius r at the given lng, lat projected onto map
