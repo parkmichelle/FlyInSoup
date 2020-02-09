@@ -135,6 +135,7 @@
       var spotlightB;
       var circleA;
       var circleB;
+      var isDragging = false;    
 
       var useSpotlights = true;
 
@@ -237,8 +238,13 @@
               .attr('id', id)
               .attr('opacity', 0.3)
               .style('fill', SPOTLIGHT_COLOR)
-              .call(d3.drag().on('drag', handleSpotlightDrag));
-
+              .call(d3.drag().on('start', function(d) {
+                                  isDragging = true;
+                              })
+                              .on('drag', handleSpotlightDrag)
+                              .on('end', function(d) {
+                                  isDragging = false;
+                              }));  
         return circle;
       }
 
@@ -262,13 +268,17 @@
                           })
                           .attr('opacity', 1)
                           .on('mouseover', function(d) {
-                              svg.append('text')
-                                 .attr('x', lngLatToXY(d.lng, d.lat).x + 10)
-                                 .attr('y', lngLatToXY(d.lng, d.lat).y + 5)
-                                 .text(d.name + ' ' + d.score)
+                              if (!isDragging) {
+                              var tooltip = d3.select("body").append("div") 
+                                              .attr("class", "tooltip");   
+                              tooltip .html(d.name + "<br/>" + "Score: " + d.score)  
+                                .style("left", (d3.event.pageX) + "px")   
+                                .style("top", (d3.event.pageY) + "px")
+                                .style('opacity', .9);
+                               }
                               })
                           .on('mouseout', function(d) {
-                            svg.selectAll('text').remove()
+                            d3.selectAll('div.tooltip').remove()
                           });
           updatedPoints.exit().remove();
       }
