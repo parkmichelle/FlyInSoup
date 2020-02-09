@@ -24,6 +24,7 @@
         <div>
           <input type="text" id="searchbox" 
             placeholder="Search for restaurants..">
+          <img onclick="clearSearch()" class="search-clear" src="media/search_x.png"></img>
           <p>Note that restaurants with no scores are not displayed</p>
         </div>
         
@@ -341,8 +342,13 @@
         }
 
         refreshPoints();
-      }
+     }
 
+     function clearSearch() {
+        document.getElementById('searchbox').value = '';
+        passNameSearchData = allData;
+        refreshPoints();
+     }
     </script>
 
   </body>
