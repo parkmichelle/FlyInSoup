@@ -50,11 +50,20 @@
             </div>
           </div>
 
-          <p id='creatorNames'>by stephanie niu & michelle park</p>
+          <p id='creator-names'>by stephanie niu & michelle park</p>
         </div>
       </div>
       <div id='map-container'/> 
-    </div>
+      <div id='map-legend'>
+        <p id='legend-title'>Inspection Score</p>
+        <img id="color-scale" src="media/colorScale.png"></img>
+        <div id='legend-labels'>
+          <p id='legend-min-label'>0</p>
+          <span id='spacing'></span>
+          <p id='legend-max-label'>100</p>
+        </div>
+      </div>
+    </body>
 
     <script>
       /*
@@ -71,7 +80,7 @@
       //const SPOTLIGHT_COLOR = "rgba(198, 45, 205, 0.6)";
       const NO_HIGHLIGHT_COLOR = '#aaaaaa';
       const SPOTLIGHT_COLOR = "rgb(143, 166, 203)";
-      const DEFAULT_SPOTLIGHT_RADIUS = 120;
+      const DEFAULT_SPOTLIGHT_RADIUS = 160;
       const RADIUS_BUF = 0;
       const NAMES = ['a', 'b'];
       const DEFAULT_SPOTLIGHT_A = {
@@ -170,7 +179,7 @@
         drawPoints(allData, 'background', color=NO_HIGHLIGHT_COLOR);
 
         refreshPoints();
-        addScale();
+        //addPointColorScale();
 
         d3.select("#nRadiusA").on("input", function() {
           handleSpotlightResize(+this.value, NAMES[0]);
@@ -218,17 +227,19 @@
 
       // Displays the colorscale
       // Src: https://github.com/d3/d3-scale-chromatic/blob/master/README.md#interpolateRainbow
-      function addScale() {
+      function addPointColorScale() {
+
       var colorScale = d3.scaleSequential(d3.interpolateRdYlGn).domain([0, mapWidth]);
-        var bars = svg.selectAll(".bars")
-          .data(d3.range(mapWidth), function(d) { return d; })
-          .enter().append("rect")
-          .attr("class", "bars")
-          .attr("x", function(d, i) { return i; })
-          .attr("y", 0)
-          .attr("height", 50)
-          .attr("width", 1)
-          .style("fill", function(d, i ) { return colorScale(d); })
+
+      var bars = svg.selectAll(".bars")
+        .data(d3.range(mapWidth), function(d) { return d; })
+        .enter().append("rect")
+        .attr("class", "bars")
+        .attr("x", function(d, i) { return i; })
+        .attr("y", 0)
+        .attr("height", 20)
+        .attr("width", 1)
+        .style("fill", function(d, i ) { return colorScale(d); })
       }
 
       // Draws a circle of radius r at the given lng, lat projected onto map
@@ -256,7 +267,6 @@
       // Draws circles on each data point in the selected color- 
       // if color is not defined, color encodes pass/fail score
       function drawPoints(data, id, color=null) {
-        console.log(data);
         let points = svg.selectAll('#' + id);
         let updatedPoints = points.data(data, d => d === undefined ? null : d.lng);
         let enterSelection = updatedPoints.enter();
