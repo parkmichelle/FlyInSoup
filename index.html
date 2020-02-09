@@ -11,16 +11,11 @@
   </head>
 
   <body>
-    <div class='horizontal-flex'>
-    
-      <div class='vertical-flex'>
+    <div class='content-container'>
+      <div id='controlPanel' class='vertical-flex'>
 
         <h1>oh no, there's a fly in me soup!</h1>
-        <h2>An interactive map of restaurant inspection scores</h2>
-
-        <p>by stephanie niu & michelle park</p>
-
-        <p>here's a little explanation! have fun exploring restaurants. love, michelle & steph</p>
+        <h2>An interactive map of South Bay restaurant inspection scores</h2>
 
         <div>
           <input type="text" id="searchbox" 
@@ -54,8 +49,11 @@
               <input type="range" min="1" max="240" id="nRadiusA">
             </div>
           </div>
+
+          <p id='creatorNames'>by stephanie niu & michelle park</p>
         </div>
       </div>
+      <div id='map-container'/> 
     </div>
 
     <script>
@@ -104,10 +102,12 @@
       }
 
       // Set up size
-      var mapWidth = 1000; var mapHeight = 750;
+      var mapScale = 1.3;
+      var mapWidth = 1000 * mapScale;
+      var mapHeight = 750 * mapScale;
 
       // Set up projection that the map is using 
-      var scale = 190000;
+      var scale = 190000 * mapScale;
       var projection = d3.geoMercator()
                          .center([-122.061578, 37.385532])
                          .scale(scale)
@@ -119,7 +119,7 @@
       // projection([lon, lat]) returns [x, y]
       // projection.invert([x, y]) returns [lon, lat]
       // Add an SVG element to the DOM
-      var svg = d3.select('.horizontal-flex').append('svg')
+      var svg = d3.select('#map-container').append('svg')
                   .attr('width', mapWidth)
                   .attr('height', mapHeight);
 
