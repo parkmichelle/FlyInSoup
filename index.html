@@ -136,6 +136,9 @@
       var circleA;
       var circleB;
       var isDragging = false;
+      var tooltip = d3.select("horizontal-flex").append("div") 
+                  .attr("class", "tooltip")       
+                  .style("opacity", 1);
 
       var useSpotlights = true;
 
@@ -245,7 +248,6 @@
                               .on('end', function(d) {
                                   isDragging = false;
                               }));  
-
         return circle;
       }
 
@@ -270,9 +272,17 @@
                           .attr('opacity', 1)
                           .on('mouseover', function(d) {
                               if (!isDragging) {
+
+                            // https://bl.ocks.org/d3noob/a22c42db65eb00d4e369
+                            /*tooltip .html(d.name + ' ' + d.score)  
+                                .style("left", (d3.event.pageX) + "px")   
+                                .style("top", (d3.event.pageX - 28) + "px")
+                                .style('opacity', .9);*/
+
                               svg.append('text')
                                  .attr('x', lngLatToXY(d.lng, d.lat).x + 10)
                                  .attr('y', lngLatToXY(d.lng, d.lat).y + 5)
+                                 .style('font', '16px Montserrat')
                                  .text(d.name + ' ' + d.score)
                                }
                               })
