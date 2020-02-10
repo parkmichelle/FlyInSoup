@@ -127,12 +127,13 @@
       }
 
       // Set up size
-      var mapScale = 1.27;
-      var mapWidth = 1000 * mapScale;
-      var mapHeight = 750 * mapScale;
+      const origWidth = 1000;
+      const origHeight = 750;
+      const origScale = 190000;
 
-      // Set up projection that the map is using 
-      var scale = 190000 * mapScale;
+      var mapWidth = window.innerWidth - 380;
+      var mapHeight = mapWidth * (origHeight / origWidth);
+      var scale = mapWidth * (origScale / origWidth);
       var projection = d3.geoMercator()
                          .center([-122.061578, 37.385532])
                          .scale(scale)

@@ -25,7 +25,7 @@ h2 {
   padding-left: 20;
   padding-right: 20;
   margin-top: 0;
-  margin-bottom: 32;
+  margin-bottom: 28;
   font-weight: normal;
 }
 
@@ -113,8 +113,8 @@ h2 {
   z-index: 3;
   margin: 0;
   background-color: white;
-  max-width: 400px;
   min-width: 400px;
+  max-width: 400px;
   min-height: 100vh;
 
   /* Shadow style from https://css-tricks.com/make-a-smooth-shadow-friend */
@@ -137,12 +137,12 @@ h2 {
 }
 
 .end-credits-container {
-  margin-top: 48px;
+  margin-top: 30px;
   color: gray;
 }
 
 #spotlight-controls {
-  margin-bottom: 12;
+  margin-bottom: 8;
 }
 
 #spotlight-controls-header {
@@ -193,7 +193,7 @@ h2 {
 .spotlight-switch-container {
   display: flex;
   justify-content: center;
-  margin-bottom: 40;
+  margin-bottom: 32;
 }
 
 #spotlight-switch-label {
