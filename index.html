@@ -131,9 +131,14 @@
       const origHeight = 750;
       const origScale = 190000;
 
-      var mapHeight = window.innerHeight;
+
+      var mapWidth = window.innerWidth - 380;
+      var mapHeight = mapWidth * (origHeight / origWidth);
+      var scale = mapWidth * (origScale / origWidth);
+
+      /*var mapHeight = window.innerHeight;
       var mapWidth = mapHeight * (origWidth / origHeight);
-      var scale = mapHeight * (origScale / origHeight);
+      var scale = mapHeight * (origScale / origHeight);*/
 
       /*var mapScale = 1.27;
       var mapWidth = 1000 * mapScale;
