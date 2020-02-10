@@ -307,7 +307,14 @@
                               if (!isDragging) {
                               var tooltip = d3.select("body").append("div") 
                                               .attr("class", "tooltip");   
-                              tooltip .html(d.name + "<br/>" + "Score: " + d.score + " (" + d.grade + ")")  
+                              tooltip .html(function() {
+                                var label = d.name + "<br/>" + "Score: " + d.score;
+                                if (d.grade == "Not Available") return label;
+                                else {
+                                  label = label + " (" + d.grade + ")";
+                                  return label;
+                                }
+                              })  
                                 .style("left", (d3.event.pageX + 5) + "px")   
                                 .style("top", (d3.event.pageY + 5) + "px")
                                 .style('opacity', .9);
