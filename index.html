@@ -131,21 +131,9 @@
       const origHeight = 750;
       const origScale = 190000;
 
-
       var mapWidth = window.innerWidth - 380;
       var mapHeight = mapWidth * (origHeight / origWidth);
       var scale = mapWidth * (origScale / origWidth);
-
-      /*var mapHeight = window.innerHeight;
-      var mapWidth = mapHeight * (origWidth / origHeight);
-      var scale = mapHeight * (origScale / origHeight);*/
-
-      /*var mapScale = 1.27;
-      var mapWidth = 1000 * mapScale;
-      var mapHeight = 750 * mapScale;
-
-      // Set up projection that the map is using 
-      var scale = 190000 * mapScale; */
       var projection = d3.geoMercator()
                          .center([-122.061578, 37.385532])
                          .scale(scale)
@@ -320,7 +308,14 @@
                               if (!isDragging) {
                               var tooltip = d3.select("body").append("div") 
                                               .attr("class", "tooltip");   
-                              tooltip .html(d.name + "<br/>" + "Score: " + d.score)  
+                              tooltip .html(function() {
+                                var label = d.name + "<br/>" + "Score: " + d.score;
+                                if (d.grade == "Not Available") return label;
+                                else {
+                                  label = label + " (" + d.grade + ")";
+                                  return label;
+                                }
+                              })  
                                 .style("left", (d3.event.pageX + 5) + "px")   
                                 .style("top", (d3.event.pageY + 5) + "px")
                                 .style('opacity', .9);
