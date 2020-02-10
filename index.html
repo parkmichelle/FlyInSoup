@@ -78,16 +78,6 @@
     </body>
 
     <script>
-      /*
-       * Commented out, for when we want to get cursor position upon click
-      function printMousePos(event) {
-        [x, y] = [event.clientX, event.clientY];
-        console.log("x: ", x, ", y: ", y);
-      }
-
-      document.addEventListener("click", printMousePos);
-      */
-      
       // Constants
       //const SPOTLIGHT_COLOR = "rgba(198, 45, 205, 0.6)";
       const NO_HIGHLIGHT_COLOR = '#aaaaaa';
@@ -244,25 +234,6 @@
         return new Point(x, y);
       }
 
-      // Displays the colorscale
-      // Src: https://github.com/d3/d3-scale-chromatic/blob/master/README.md#interpolateRainbow
-
-      function addPointColorScale() {
-
-      var colorScale = d3.scaleSequential(d3.interpolateRdYlGn).domain([0, mapWidth]);
-
-      var bars = svg.selectAll(".bars")
-        .data(d3.range(mapWidth), function(d) { return d; })
-        .enter().append("rect")
-        .attr("class", "bars")
-        .attr("x", function(d, i) { return i; })
-        .attr("y", 0)
-        .attr("height", 20)
-        .attr("width", 1)
-        .style("fill", function(d, i ) { return colorScale(d); })
-
-      }
-
       // Draws a circle of radius r at the given lng, lat projected onto map
       function drawSpotlight(lng, lat, r, data, id) {
         var xyPos = lngLatToXY(lng, lat);
@@ -395,6 +366,7 @@
         refreshPoints();
       }
 
+      // Toggles the spotlights 
       function handleSpotlightToggle(checkbox) {
         useSpotlights = checkbox.checked;
         if (!useSpotlights) {
@@ -408,13 +380,12 @@
         refreshPoints();
      }
 
+     // Clears search bar and refreshes points
      function clearSearch() {
         document.getElementById('searchbox').value = '';
         passNameSearchData = allData;
         refreshPoints();
      }
     </script>
-
   </body>
-
 <html/>

@@ -163,9 +163,9 @@ h2 {
   padding: 0;
 }
 
-::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+::placeholder {
   color: #999;
-  opacity: 1; /* Firefox */
+  opacity: 1;
 }
 
 #searchbox {
@@ -206,15 +206,15 @@ h2 {
 }
 
 .tooltip {	
-    position: absolute;			
-    text-align: center;								
-    padding: 5px;				
-    font: 14px Montserrat;		
-    background: white;	
-    border: 0px;		
-    border-radius: 10px;			
-    pointer-events: none;	
-    opacity: .75;		
+  position: absolute;			
+  text-align: center;								
+  padding: 5px;				
+  font: 14px Montserrat;		
+  background: white;	
+  border: 0px;		
+  border-radius: 10px;			
+  pointer-events: none;	
+  opacity: .75;		
 }
 
 .vertical-flex {
