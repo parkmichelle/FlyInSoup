@@ -8,13 +8,14 @@
 
     <link rel="stylesheet" href="style.css"> 
     <link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
   </head>
 
   <body>
     <div class='content-container'>
       <div id='controlPanel' class='vertical-flex'>
 
-        <h1>oh no, there's a fly in me soup!</h1>
+        <h1>Waiter, there's a fly in my soup!</h1>
         <h2>An interactive map of South Bay restaurant inspection scores</h2>
 
         <div>
@@ -40,27 +41,30 @@
 
           <div class='horizontal-flex'>
             <div>
-              <div id="textB">120</div>
-              <input type="range" min="1" max="240" id="nRadiusB">
+              <div id="textB">2.5</div>
+              <input type="range" min="1" max="394" id="nRadiusB">
             </div>
         
             <div>
-              <div id="textA">120</div>
-              <input type="range" min="1" max="240" id="nRadiusA">
+              <div id="textA">2.5</div>
+              <input type="range" min="1" max="394" id="nRadiusA">
             </div>
           </div>
 
           <p id='creator-names'>by stephanie niu & michelle park</p>
         </div>
       </div>
+      
       <div id='map-container'/> 
       <div id='map-legend'>
         <p id='legend-title'>Inspection Score</p>
         <img id="color-scale" src="media/colorScale.png"></img>
         <div id='legend-labels'>
-          <p id='legend-min-label'>0</p>
+          <p id='legend-label'>0</p>
           <span id='spacing'></span>
-          <p id='legend-max-label'>100</p>
+          <p id='legend-label'>50</p>
+          <span id='spacing'></span>
+          <p id='legend-label'>100</p>
         </div>
       </div>
     </body>
@@ -80,9 +84,13 @@
       //const SPOTLIGHT_COLOR = "rgba(198, 45, 205, 0.6)";
       const NO_HIGHLIGHT_COLOR = '#aaaaaa';
       const SPOTLIGHT_COLOR = "rgb(143, 166, 203)";
-      const DEFAULT_SPOTLIGHT_RADIUS = 160;
+      const DEFAULT_SPOTLIGHT_RADIUS = 197;
       const RADIUS_BUF = 0;
       const NAMES = ['a', 'b'];
+      const MILES_PER_LAT = 69;
+      const START_X = 37;
+      const START_Y = 122;
+
       const DEFAULT_SPOTLIGHT_A = {
         name: "HONG KONG RESTAURANT",
         grade: "Pass",
@@ -151,6 +159,9 @@
 
       var passNameSearchData;
       var spotlightIntersectionData;
+
+      var milesPerR = getMilesPerR();
+      console.log(milesPerR);
 
       // Read in data
       d3.csv('data/data.csv', function(d) {
@@ -299,6 +310,16 @@
           updatedPoints.exit().remove();
       }
 
+      function getMilesPerR() {
+        var start = lngLatToXY(START_Y, START_X,);
+        var end = lngLatToXY(START_Y, START_X + 1);
+
+        var dist = Math.sqrt((start.x - end.x) * (start.x - end.x) + (start.y - end.y) * (start.y - end.y));
+        console.log("dist", dist);
+        // get map distance between start and end
+        return MILES_PER_LAT/dist;
+        // 
+      }
 
       // Refreshes display by replotting data points according to current
       // stores of spotlight intersection and name search data points
@@ -345,9 +366,10 @@
 
       // Updates the circle size and text based on radius
       function handleSpotlightResize(nRadius, id) {
+        var dec = d3.format(".1f");
         // adjust the text on the range slider
-        d3.select("#nRadius-value").text(nRadius);
-        d3.select("#text" + id).text(nRadius);
+        d3.select("#nRadius-value").text(dec(nRadius*milesPerR));
+        d3.select("#text" + id).text(dec(nRadius*milesPerR));
 
         // update the circle radius
         d3.select('#' + id).attr('r', nRadius);
