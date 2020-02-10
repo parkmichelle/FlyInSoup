@@ -1,5 +1,4 @@
 <html>
-
   <head>
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
@@ -19,10 +18,12 @@
         <h2>An interactive map of South Bay restaurant inspection scores</h2>
         <div id="vertical-spacing"></div>
 
-        <div>
-          <input type="text" id="searchbox" 
-            placeholder="Search for restaurants..">
-          <img onclick="clearSearch()" class="search-clear" src="media/search_x.png"></img>
+        <div class='search-container'>
+          <div class='searchbar'>
+            <input type="text" id="searchbox" 
+              placeholder="Search for restaurants..">
+            <img onclick="clearSearch()" class="search-clear" src="media/search_x.png"></img>
+          </div>
           <p class="small">Restaurants with no scores are not displayed.</p>
         </div>
 
