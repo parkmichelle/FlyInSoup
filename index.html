@@ -8,31 +8,38 @@
 
     <link rel="stylesheet" href="style.css"> 
     <link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
   </head>
 
   <body>
     <div class='content-container'>
       <div id='controlPanel' class='vertical-flex'>
 
-        <h1>oh no, there's a fly in me soup!</h1>
+        <h1>Waiter, there's a fly in my soup!</h1>
         <h2>An interactive map of South Bay restaurant inspection scores</h2>
+        <div id="vertical-spacing"></div>
 
         <div>
           <input type="text" id="searchbox" 
             placeholder="Search for restaurants..">
           <img onclick="clearSearch()" class="search-clear" src="media/search_x.png"></img>
-          <p>Note that restaurants with no scores are not displayed</p>
+          <p class="small">Restaurants with no scores are not displayed.</p>
         </div>
+
+        <div id="vertical-spacing"></div>
         
         <div id="spotlight-controls">
           <!-- Toggle spotlights -->
-          <div class='horizontal-flex'>
+          <div class='row-flex'>
             <label class="switch">
               <input type="checkbox" onchange="handleSpotlightToggle(this)" checked>
               <span class="slider round"></span>
             </label> 
-            <p>Use spotlights</p>
+           <div id="horizontal-spacing"></div>
+          <div>Use spotlights</div>
           </div>
+
+          <div id="vertical-spacing"></div>
 
           <div class='horizontal-flex'>
             <img id="icon" src="media/intersect.png"></img>
@@ -40,27 +47,32 @@
 
           <div class='horizontal-flex'>
             <div>
-              <div id="textB">120</div>
-              <input type="range" min="1" max="240" id="nRadiusB">
+              <div id="textB">2.5 miles</div>
+              <input type="range" min="1" max="394" id="nRadiusB">
             </div>
         
             <div>
-              <div id="textA">120</div>
-              <input type="range" min="1" max="240" id="nRadiusA">
+              <div id="textA">2.5 miles</div>
+              <input type="range" min="1" max="394" id="nRadiusA">
             </div>
           </div>
+
+          <div id="vertical-spacing"></div>
 
           <p id='creator-names'>by stephanie niu & michelle park</p>
         </div>
       </div>
+      
       <div id='map-container'/> 
       <div id='map-legend'>
         <p id='legend-title'>Inspection Score</p>
         <img id="color-scale" src="media/colorScale.png"></img>
         <div id='legend-labels'>
-          <p id='legend-min-label'>0</p>
+          <p id='legend-label'>0</p>
           <span id='spacing'></span>
-          <p id='legend-max-label'>100</p>
+          <p id='legend-label'>50</p>
+          <span id='spacing'></span>
+          <p id='legend-label'>100</p>
         </div>
       </div>
     </body>
@@ -80,9 +92,13 @@
       //const SPOTLIGHT_COLOR = "rgba(198, 45, 205, 0.6)";
       const NO_HIGHLIGHT_COLOR = '#aaaaaa';
       const SPOTLIGHT_COLOR = "rgb(143, 166, 203)";
-      const DEFAULT_SPOTLIGHT_RADIUS = 160;
+      const DEFAULT_SPOTLIGHT_RADIUS = 197;
       const RADIUS_BUF = 0;
       const NAMES = ['a', 'b'];
+      const MILES_PER_LAT = 69;
+      const START_X = 37;
+      const START_Y = 122;
+
       const DEFAULT_SPOTLIGHT_A = {
         name: "HONG KONG RESTAURANT",
         grade: "Pass",
@@ -151,6 +167,8 @@
 
       var passNameSearchData;
       var spotlightIntersectionData;
+
+      var milesPerR = getMilesPerR();
 
       // Read in data
       d3.csv('data/data.csv', function(d) {
@@ -227,6 +245,7 @@
 
       // Displays the colorscale
       // Src: https://github.com/d3/d3-scale-chromatic/blob/master/README.md#interpolateRainbow
+
       function addPointColorScale() {
 
       var colorScale = d3.scaleSequential(d3.interpolateRdYlGn).domain([0, mapWidth]);
@@ -240,6 +259,7 @@
         .attr("height", 20)
         .attr("width", 1)
         .style("fill", function(d, i ) { return colorScale(d); })
+
       }
 
       // Draws a circle of radius r at the given lng, lat projected onto map
@@ -299,6 +319,15 @@
           updatedPoints.exit().remove();
       }
 
+      function getMilesPerR() {
+        var start = lngLatToXY(START_Y, START_X,);
+        var end = lngLatToXY(START_Y, START_X + 1);
+
+        var dist = Math.sqrt((start.x - end.x) * (start.x - end.x) + (start.y - end.y) * (start.y - end.y));
+        // get map distance between start and end
+        return MILES_PER_LAT/dist;
+        // 
+      }
 
       // Refreshes display by replotting data points according to current
       // stores of spotlight intersection and name search data points
@@ -345,9 +374,11 @@
 
       // Updates the circle size and text based on radius
       function handleSpotlightResize(nRadius, id) {
+        var dec = d3.format(".1f");
+
         // adjust the text on the range slider
-        d3.select("#nRadius-value").text(nRadius);
-        d3.select("#text" + id).text(nRadius);
+        d3.select("#nRadius-value").text(dec(nRadius*milesPerR) + " miles");
+        d3.select("#text" + id).text(dec(nRadius*milesPerR) + " miles");
 
         // update the circle radius
         d3.select('#' + id).attr('r', nRadius);
