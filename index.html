@@ -308,8 +308,8 @@
                               var tooltip = d3.select("body").append("div") 
                                               .attr("class", "tooltip");   
                               tooltip .html(d.name + "<br/>" + "Score: " + d.score)  
-                                .style("left", (d3.event.pageX) + "px")   
-                                .style("top", (d3.event.pageY) + "px")
+                                .style("left", (d3.event.pageX + 5) + "px")   
+                                .style("top", (d3.event.pageY + 5) + "px")
                                 .style('opacity', .9);
                                }
                               })
