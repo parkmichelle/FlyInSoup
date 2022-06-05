@@ -1,6 +1,6 @@
 # Waiter, there's a fly in my soup!
 
-Our visualization of restaurant inspection scores in the South Bay can be found on the web at http://parkmichelle.github.io/flyinsoup. To view it locally, navigate to the unzipped directory, run a python server using python3 -m http.server, and view localhost:8000 in your browser.
+Our visualization of restaurant inspection scores in the South Bay can be found on the web at http://parkmichelle.github.io/FlyInSoup. To view it locally, navigate to the unzipped directory, run a python server using python3 -m http.server, and view localhost:8000 in your browser.
 
 ## Time spent
 We spent about 30 hours total.
